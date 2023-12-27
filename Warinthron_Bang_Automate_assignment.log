@@ -1,0 +1,81 @@
+* Settings *
+Library           SeleniumLibrary
+
+*** Variables ***
+${browser}      Chrome
+${url_namegenerator}   https://www.name-generator.org.uk/quick/
+${btn_submit}           //input[@type="submit"]
+${test_num}      5
+${test_minnum}      0
+${test_maxnum}      999
+${test_text}      test
+
+* Test Cases *
+AT01_NameGenerator_FemaleSuccess
+    [Tags]    AT01    Success    Generator
+    Open Browser    ${url_namegenerator}    ${browser}
+	Input Text      name="count"   ${test_num}
+	Click Element    xpath=//select[@id="gender"]
+	Select From List by Value    xpath=//select[@id="gender"]    f
+	Click Button    xpath=//input[@type="submit"]
+	
+AT02_NameGenerator_MaleSuccess
+    [Tags]    AT02    Success    Generator
+    Open Browser    ${url_namegenerator}    ${browser}
+	Input Text      name="count"   ${test_num}
+	Click Element    xpath=//select[@id="gender"]
+	Select From List by Value    xpath=//select[@id="gender"]    m
+	Click Button    xpath=//input[@type="submit"]
+	
+AT03_NameGenerator_BothSuccess
+    [Tags]    AT03    Success    Generator
+    Open Browser    ${url_namegenerator}    ${browser}
+	Input Text      name="count"   ${test_num}
+	Click Element    xpath=//select[@id="gender"]
+	Select From List by Value    xpath=//select[@id="gender"]    b
+	Click Button    xpath=//input[@type="submit"]
+	
+AT04_NameGenerator_UnisexSuccess
+    [Tags]    AT04    Success    Generator
+    Open Browser    ${url_namegenerator}    ${browser}
+	Input Text      name="count"   ${test_num}
+	Click Element    xpath=//select[@id="gender"]
+	Select From List by Value    xpath=//select[@id="gender"]    u
+	Click Button    xpath=//input[@type="submit"]
+	
+AT05_NameGenerator_Num0_UnSuccess
+    [Tags]    AT05    UnSuccess    Generator
+    Open Browser    ${url_namegenerator}    ${browser}
+	Input Text      name="count"   ${test_minnum}
+	Click Element    xpath=//select[@id="gender"]
+	Select From List by Value    xpath=//select[@id="gender"]    f
+	Click Button    xpath=//input[@type="submit"]
+	Wait Until Element Is Visible    xpath=//*[@class="message"]
+	${header_message}    Get Text    xpath=//*[@class="message"]
+	Should Contain    ${header_message}    Count cannot be less than 1
+	
+AT05_NameGenerator_NumMoreThan100_UnSuccess
+    [Tags]    AT04    UnSuccess    Generator
+    Open Browser    ${url_namegenerator}    ${browser}
+	Input Text      name="count"   ${test_maxnum}
+	Click Element    xpath=//select[@id="gender"]
+	Select From List by Value    xpath=//select[@id="gender"]    f
+	Click Button    xpath=//input[@type="submit"]
+	Wait Until Element Is Visible    xpath=//*[@class="message"]
+	${header_message}    Get Text    xpath=//*[@class="message"]
+	Should Contain    ${header_message}    Count cannot be greater than 100
+	
+AT05_NameGenerator_Text_UnSuccess
+    [Tags]    AT04    UnSuccess    Generator
+    Open Browser    ${url_namegenerator}    ${browser}
+	Input Text      name="count"   ${test_text}
+	Click Element    xpath=//select[@id="gender"]
+	Select From List by Value    xpath=//select[@id="gender"]    f
+	Click Button    xpath=//input[@type="submit"]
+	Wait Until Element Is Visible    xpath=//*[@class="message"]
+	${header_message}    Get Text    xpath=//*[@class="message"]
+	Should Contain    ${header_message}    Count cannot be greater than 100
+	
+	
+	
+	
