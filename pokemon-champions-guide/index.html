@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0b1020" />
+<title>Pokémon Champions — Second Screen Guide</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#151c33; --panel2:#1d2746; --line:#2b3766;
+    --txt:#e8ecff; --muted:#94a0c8; --accent:#ffcb05; --accent2:#3b6bff;
+    --good:#39d98a; --bad:#ff5d6c; --warn:#ffb020;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans Thai",sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%,#1a2547 0,var(--bg) 55%);
+    color:var(--txt); min-height:100vh; -webkit-text-size-adjust:100%;
+  }
+  header{
+    display:flex; align-items:center; gap:12px; padding:16px 20px;
+    border-bottom:1px solid var(--line); position:sticky; top:0; z-index:10;
+    background:rgba(11,16,32,.85); backdrop-filter:blur(8px);
+  }
+  header .logo{
+    width:34px;height:34px;border-radius:50%;
+    background:conic-gradient(var(--bad) 0 50%,#fff 50% 100%);
+    border:3px solid #0b1020; box-shadow:0 0 0 2px var(--accent);
+    position:relative; flex:0 0 auto;
+  }
+  header .logo::after{content:"";position:absolute;inset:42% 0 0 0;height:3px;background:#0b1020}
+  header h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.2px}
+  header .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+  .tabs button{
+    background:var(--panel); color:var(--muted); border:1px solid var(--line);
+    padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .tabs button.active{background:var(--accent);color:#1a1a1a;border-color:var(--accent)}
+  main{max-width:1100px;margin:0 auto;padding:18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px}
+  h2{font-size:15px;margin:0 0 14px;color:var(--accent)}
+  .hint{font-size:12px;color:var(--muted);margin:-6px 0 14px}
+  .view{display:none}
+  .view.active{display:block}
+
+  /* type buttons */
+  .typegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+  .type-btn{
+    border:2px solid transparent;border-radius:10px;padding:9px 6px;font-size:12px;
+    font-weight:700;color:#fff;cursor:pointer;text-transform:uppercase;letter-spacing:.4px;
+    text-shadow:0 1px 2px rgba(0,0,0,.45);opacity:.55;transition:.12s;
+  }
+  .type-btn.on{opacity:1;border-color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  .label{font-size:13px;color:var(--muted);margin:14px 0 8px;font-weight:600}
+  .row{display:flex;flex-wrap:wrap;gap:18px}
+  .col{flex:1 1 320px;min-width:280px}
+
+  .result{margin-top:8px;font-size:14px}
+  .mult-line{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;
+    margin-bottom:6px;background:var(--panel2);font-size:14px;
+  }
+  .mult-line .t{flex:1;text-transform:capitalize}
+  .badge{padding:3px 9px;border-radius:999px;font-weight:800;font-size:13px;min-width:42px;text-align:center}
+  .x0{background:#3a3f55;color:#aeb6d6}
+  .x025{background:#33405f;color:#9fc4ff}
+  .x05{background:#2f5a86;color:#bfe0ff}
+  .x1{background:#3a3f55;color:#cfd6f5}
+  .x2{background:#7a3c12;color:#ffd9a8}
+  .x4{background:#7a1320;color:#ffb3bd}
+  .summary{
+    font-size:15px;font-weight:700;padding:12px 14px;border-radius:12px;margin-bottom:12px;
+    border:1px solid var(--line)
+  }
+
+  /* chart */
+  .chartwrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+  table.chart{border-collapse:collapse;font-size:11px;white-space:nowrap}
+  table.chart th,table.chart td{border:1px solid #25305a;padding:4px 6px;text-align:center;min-width:30px}
+  table.chart th{position:sticky;top:0;background:var(--panel2);z-index:2}
+  table.chart th.rowh{position:sticky;left:0;z-index:3;text-align:left;font-weight:700}
+  table.chart td.rowh{position:sticky;left:0;background:var(--panel2);text-align:left;font-weight:700;z-index:1}
+  table.chart .c2{background:rgba(122,60,18,.55);color:#ffd9a8;font-weight:700}
+  table.chart .c05{background:rgba(47,90,134,.5);color:#bfe0ff}
+  table.chart .c0{background:rgba(58,63,85,.7);color:#aeb6d6;font-weight:700}
+
+  /* notes */
+  textarea{
+    width:100%;min-height:160px;background:var(--panel2);color:var(--txt);
+    border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;
+    font-family:inherit;resize:vertical
+  }
+  .savednote{font-size:12px;color:var(--good);margin-top:8px;height:16px}
+  .btn{
+    background:var(--accent2);color:#fff;border:none;padding:9px 16px;border-radius:10px;
+    font-weight:700;cursor:pointer;font-size:13px
+  }
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+  .toolbar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  footer{text-align:center;color:var(--muted);font-size:11px;padding:18px}
+  .warnbox{
+    background:rgba(255,176,32,.1);border:1px solid var(--warn);border-radius:12px;
+    padding:12px 14px;font-size:12.5px;color:#ffd98a;margin-bottom:18px;line-height:1.5
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"></div>
+  <div>
+    <h1>Pokémon Champions — Second Screen Guide</h1>
+    <div class="sub">เปิดบนจอที่สอง • iPad / Mac / มือถืออีกเครื่อง • อัปเดต realtime</div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-view="matchup" class="active">ธาตุ Matchup</button>
+    <button data-view="chart">ตารางธาตุ</button>
+    <button data-view="notes">โน้ตทีม</button>
+  </nav>
+</header>
+
+<main>
+  <div class="warnbox">
+    ⚠️ เครื่องมือนี้เป็น <b>reference</b> ให้คุณดูเองด้วยตา ไม่ได้อ่านหน้าจอเกมหรือเล่นแทน —
+    ปลอดภัยต่อกติกาการแข่งขัน iOS ไม่อนุญาต overlay ลอยทับเกมบนจอเดียว จึงใช้เป็น "จอที่สอง" คู่กับ iPhone
+  </div>
+
+  <!-- ===== MATCHUP ===== -->
+  <section class="view active" id="view-matchup">
+    <div class="panel">
+      <h2>① ฝั่งโจมตี — ท่าของเราจะเข้าคู่ต่อสู้แค่ไหน</h2>
+      <p class="hint">เลือกธาตุของท่าที่เราจะใช้ 1 อัน แล้วเลือกธาตุของโปเกมอนคู่ต่อสู้ (1–2 ธาตุ)</p>
+      <div class="row">
+        <div class="col">
+          <div class="label">ธาตุท่าของเรา (เลือก 1)</div>
+          <div class="typegrid" id="atkMove"></div>
+        </div>
+        <div class="col">
+          <div class="label">ธาตุคู่ต่อสู้ (เลือก 1–2)</div>
+          <div class="typegrid" id="atkDef"></div>
+          <div class="result" id="atkResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>② ฝั่งตั้งรับ — ท่าที่เข้ามาจะเจ็บแค่ไหน</h2>
+      <p class="hint">เลือกธาตุของโปเกมอนเรา (1–2) จะเห็นว่าธาตุไหน "อันตราย/กันได้" กับเรา</p>
+      <div class="row">
+        <div class="col">
+          <div class="label">ธาตุโปเกมอนเรา (เลือก 1–2)</div>
+          <div class="typegrid" id="defMine"></div>
+        </div>
+        <div class="col">
+          <div class="label">สรุปจุดอ่อน / จุดแข็ง</div>
+          <div class="result" id="defResult"><p class="hint">เลือกธาตุของเราเพื่อดูผล</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CHART ===== -->
+  <section class="view" id="view-chart">
+    <div class="panel">
+      <h2>ตารางความได้เปรียบธาตุ (18 ธาตุ)</h2>
+      <p class="hint">แถว = ธาตุท่าโจมตี, คอลัมน์ = ธาตุที่โดน • <span style="color:#ffd9a8">2×</span> = แรง, <span style="color:#bfe0ff">½×</span> = อ่อน, <span style="color:#aeb6d6">0</span> = ไม่เข้า</p>
+      <div class="chartwrap"><div id="chartTable"></div></div>
+    </div>
+  </section>
+
+  <!-- ===== NOTES ===== -->
+  <section class="view" id="view-notes">
+    <div class="panel">
+      <h2>โน้ตทีม / แผนการเล่น</h2>
+      <p class="hint">บันทึกอัตโนมัติในเครื่องนี้ (localStorage) — เปิดมาครั้งหน้าก็ยังอยู่</p>
+      <textarea id="notes" placeholder="เช่น:&#10;- ทีมเรา: Garchomp / Kingambit / ...&#10;- ระวังคู่ต่อสู้ Fairy → สลับ Steel&#10;- Lead: __ , Win con: __"></textarea>
+      <div class="toolbar">
+        <button class="btn" id="saveNotes">บันทึก</button>
+        <button class="btn ghost" id="clearNotes">ล้าง</button>
+        <span class="savednote" id="noteStatus"></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>Second-screen reference สำหรับ Pokémon Champions • ทำงานออฟไลน์ • ไม่เก็บข้อมูลออกนอกเครื่อง</footer>
+
+<script>
+const TYPES = ["normal","fire","water","electric","grass","ice","fighting","poison","ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"];
+const COLORS = {
+  normal:"#9aa0aa",fire:"#ff7e3f",water:"#4aa0ff",electric:"#f7c948",grass:"#5fbf60",
+  ice:"#6fd3d8",fighting:"#d6443c",poison:"#9b59c4",ground:"#d8a93f",flying:"#7ba6ff",
+  psychic:"#ff5f96",bug:"#9fb735",rock:"#bda255",ghost:"#6a5acd",dragon:"#5b46d6",
+  dark:"#5a5466",steel:"#7f8aa3",fairy:"#ff8fd0"
+};
+const TH = {
+  normal:"นอร์มอล",fire:"ไฟ",water:"น้ำ",electric:"ไฟฟ้า",grass:"พืช",ice:"น้ำแข็ง",
+  fighting:"ต่อสู้",poison:"พิษ",ground:"ดิน",flying:"บิน",psychic:"พลังจิต",bug:"แมลง",
+  rock:"หิน",ghost:"ผี",dragon:"มังกร",dark:"ความมืด",steel:"เหล็ก",fairy:"แฟรี่"
+};
+// attacker -> { defender: multiplier } (only non-1 listed)
+const CHART = {
+  normal:{rock:.5,ghost:0,steel:.5},
+  fire:{fire:.5,water:.5,grass:2,ice:2,bug:2,rock:.5,dragon:.5,steel:2},
+  water:{fire:2,water:.5,grass:.5,ground:2,rock:2,dragon:.5},
+  electric:{water:2,electric:.5,grass:.5,ground:0,flying:2,dragon:.5},
+  grass:{fire:.5,water:2,grass:.5,poison:.5,ground:2,flying:.5,bug:.5,rock:2,dragon:.5,steel:.5},
+  ice:{fire:.5,water:.5,grass:2,ice:.5,ground:2,flying:2,dragon:2,steel:.5},
+  fighting:{normal:2,ice:2,poison:.5,flying:.5,psychic:.5,bug:.5,rock:2,ghost:0,dark:2,steel:2,fairy:.5},
+  poison:{grass:2,poison:.5,ground:.5,rock:.5,ghost:.5,steel:0,fairy:2},
+  ground:{fire:2,electric:2,grass:.5,poison:2,flying:0,bug:.5,rock:2,steel:2},
+  flying:{electric:.5,grass:2,fighting:2,bug:2,rock:.5,steel:.5},
+  psychic:{fighting:2,poison:2,psychic:.5,dark:0,steel:.5},
+  bug:{fire:.5,grass:2,fighting:.5,poison:.5,flying:.5,psychic:2,ghost:.5,dark:2,steel:.5,fairy:.5},
+  rock:{fire:2,ice:2,fighting:.5,ground:.5,flying:2,bug:2,steel:.5},
+  ghost:{normal:0,psychic:2,ghost:2,dark:.5},
+  dragon:{dragon:2,steel:.5,fairy:0},
+  dark:{fighting:.5,psychic:2,ghost:2,dark:.5,fairy:.5},
+  steel:{fire:.5,water:.5,electric:.5,ice:2,rock:2,steel:.5,fairy:2},
+  fairy:{fire:.5,fighting:2,poison:.5,dragon:2,dark:2,steel:.5}
+};
+const eff = (atk,def) => (CHART[atk] && CHART[atk][def]!==undefined) ? CHART[atk][def] : 1;
+const fmtMult = v => v===0?"0×" : v===0.25?"¼×" : v===0.5?"½×" : v===1?"1×" : v===2?"2×" : v===4?"4×" : v+"×";
+const multClass = v => v===0?"x0":v===0.25?"x025":v===0.5?"x05":v===2?"x2":v===4?"x4":"x1";
+
+// ---- build type buttons ----
+function buildTypeGrid(container, mode){ // mode: 'single' or 'multi'
+  TYPES.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="type-btn"; b.dataset.type=t; b.textContent=TH[t];
+    b.style.background=COLORS[t];
+    b.addEventListener("click",()=>{
+      if(mode==="single"){
+        [...container.children].forEach(c=>c.classList.remove("on"));
+        b.classList.add("on");
+      } else {
+        const on=container.querySelectorAll(".on");
+        if(!b.classList.contains("on") && on.length>=2) return; // max 2
+        b.classList.toggle("on");
+      }
+      recalc();
+    });
+    container.appendChild(b);
+  });
+}
+const selected = c => [...c.querySelectorAll(".on")].map(b=>b.dataset.type);
+
+const atkMove=document.getElementById("atkMove");
+const atkDef=document.getElementById("atkDef");
+const defMine=document.getElementById("defMine");
+buildTypeGrid(atkMove,"single");
+buildTypeGrid(atkDef,"multi");
+buildTypeGrid(defMine,"multi");
+
+function recalc(){
+  // ----- offensive -----
+  const move=selected(atkMove)[0];
+  const targ=selected(atkDef);
+  const aR=document.getElementById("atkResult");
+  if(move && targ.length){
+    let total=1, lines="";
+    targ.forEach(d=>{
+      const v=eff(move,d); total*=v;
+      lines+=`<div class="mult-line"><span class="t">vs ${TH[d]}</span><span class="badge ${multClass(v)}">${fmtMult(v)}</span></div>`;
+    });
+    let verdict, color;
+    if(total===0){verdict="ไม่เข้าเลย — เปลี่ยนท่า!";color="var(--bad)";}
+    else if(total>=2){verdict="ได้เปรียบ! ตีแรง";color="var(--good)";}
+    else if(total<=0.5){verdict="ไม่ค่อยเข้า — ลองธาตุอื่น";color="var(--warn)";}
+    else{verdict="ปกติ";color="var(--muted)";}
+    aR.innerHTML=`<div class="summary" style="color:${color}">รวม ${fmtMult(total)} — ${verdict}</div>${lines}`;
+  } else {
+    aR.innerHTML=`<p class="hint">เลือกธาตุท่า + ธาตุคู่ต่อสู้</p>`;
+  }
+
+  // ----- defensive -----
+  const mine=selected(defMine);
+  const dR=document.getElementById("defResult");
+  if(mine.length){
+    const weak=[],resist=[],immune=[];
+    TYPES.forEach(atk=>{
+      let m=1; mine.forEach(d=>m*=eff(atk,d));
+      if(m===0) immune.push([atk,m]);
+      else if(m>1) weak.push([atk,m]);
+      else if(m<1) resist.push([atk,m]);
+    });
+    weak.sort((a,b)=>b[1]-a[1]); resist.sort((a,b)=>a[1]-b[1]);
+    const block=(title,arr,col)=>{
+      if(!arr.length) return `<div class="label">${title}</div><p class="hint">— ไม่มี —</p>`;
+      return `<div class="label">${title}</div>`+arr.map(([t,v])=>
+        `<div class="mult-line"><span class="t">${TH[t]}</span><span class="badge ${multClass(v)}">${fmtMult(v)}</span></div>`).join("");
+    };
+    dR.innerHTML =
+      block("🔴 อ่อนแอต่อ (โดนแรง — ระวัง/สลับ)",weak)+
+      block("🟢 ทนต่อ (กันได้ ปลอดภัย)",resist)+
+      block("⚪ ภูมิคุ้มกัน (ไม่โดนเลย)",immune);
+  } else {
+    dR.innerHTML=`<p class="hint">เลือกธาตุของเราเพื่อดูผล</p>`;
+  }
+}
+
+// ---- chart table ----
+(function buildChart(){
+  let h='<table class="chart"><thead><tr><th class="rowh">โจมตี＼โดน</th>';
+  TYPES.forEach(t=>h+=`<th style="color:${COLORS[t]}">${TH[t]}</th>`);
+  h+='</tr></thead><tbody>';
+  TYPES.forEach(atk=>{
+    h+=`<tr><td class="rowh" style="color:${COLORS[atk]}">${TH[atk]}</td>`;
+    TYPES.forEach(def=>{
+      const v=eff(atk,def);
+      const cls=v===2?"c2":v===0.5?"c05":v===0?"c0":"";
+      h+=`<td class="${cls}">${v===1?"":fmtMult(v)}</td>`;
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById("chartTable").innerHTML=h;
+})();
+
+// ---- tabs ----
+document.getElementById("tabs").addEventListener("click",e=>{
+  const btn=e.target.closest("button"); if(!btn) return;
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-"+btn.dataset.view).classList.add("active");
+});
+
+// ---- notes (localStorage) ----
+const notes=document.getElementById("notes");
+const KEY="pc_team_notes";
+notes.value=localStorage.getItem(KEY)||"";
+const status=document.getElementById("noteStatus");
+function saveNotes(silent){
+  localStorage.setItem(KEY,notes.value);
+  if(!silent){status.textContent="บันทึกแล้ว ✓";setTimeout(()=>status.textContent="",1800);}
+}
+document.getElementById("saveNotes").addEventListener("click",()=>saveNotes(false));
+document.getElementById("clearNotes").addEventListener("click",()=>{
+  if(confirm("ล้างโน้ตทั้งหมด?")){notes.value="";saveNotes(false);}
+});
+let t; notes.addEventListener("input",()=>{clearTimeout(t);t=setTimeout(()=>saveNotes(true),600);});
+
+recalc();
+</script>
+</body>
+</html>
