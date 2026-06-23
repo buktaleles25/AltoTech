@@ -1,0 +1,19 @@
+# Build output
+bin/
+obj/
+
+# Local tooling
+.dotnet/
+
+# Save files / generated artifacts (never commit real or test saves)
+*.sav
+*.bak
+*.bin
+*.dsv
+*.dat
+!sample/sets.txt
+
+# IDE
+.vs/
+.idea/
+*.user

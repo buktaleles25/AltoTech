@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Match the AutoMod submodule's target/lang so the whole graph compiles cleanly -->
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>pkinject</AssemblyName>
+    <RootNamespace>PokemonBatchInjector</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Auto Legality Mod (ShowdownSet -> legal PKM). Consumed from source via the
+      git submodule under external/. It declares its own PKHeX.Core 24.5.5
+      PackageReference, which flows to us transitively.
+    -->
+    <ProjectReference Include="..\..\external\PKHeX-Plugins\PKHeX.Core.AutoMod\PKHeX.Core.AutoMod.csproj" />
+
+    <!-- Pin PKHeX.Core explicitly to the exact version AutoMod targets. -->
+    <PackageReference Include="PKHeX.Core" Version="24.5.5" />
+  </ItemGroup>
+
+</Project>

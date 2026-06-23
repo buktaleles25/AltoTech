@@ -1,0 +1,3 @@
+[submodule "external/PKHeX-Plugins"]
+	path = external/PKHeX-Plugins
+	url = https://github.com/architdate/PKHeX-Plugins.git
