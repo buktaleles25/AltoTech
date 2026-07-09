@@ -5,6 +5,7 @@ import {
   LOW_CONFIDENCE_FILL_MARKER,
   MIN_STEP_CONFIDENCE,
   Selection,
+  STEP_LOOKAHEAD_DAYS,
   VALUE_EDGE_THRESHOLD,
 } from "@/lib/constants";
 
@@ -51,10 +52,10 @@ export function selectStepLegs(candidates: Candidate[]): { chosen: SelectedLeg[]
 export async function buildDailyStep(targetDate: Date = new Date()): Promise<{ stepId: string; legCount: number; isFullStrength: boolean }> {
   const dayStart = new Date(targetDate);
   dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+  const lookaheadEnd = new Date(dayStart.getTime() + STEP_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000);
 
   const fixtures = await prisma.fixture.findMany({
-    where: { kickoffAt: { gte: dayStart, lt: dayEnd }, status: FixtureStatus.SCHEDULED },
+    where: { kickoffAt: { gte: new Date(), lt: lookaheadEnd }, status: FixtureStatus.SCHEDULED },
     include: {
       oddsSnapshots: { where: { isOpeningLine: false }, orderBy: { capturedAt: "desc" } },
       modelPredictions: { orderBy: { computedAt: "desc" }, take: 1 },

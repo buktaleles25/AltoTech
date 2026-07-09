@@ -4,11 +4,12 @@ import { prisma } from "@/lib/db";
 import { analyzeFixture } from "@/lib/analysis/analyze";
 import { buildDailyStep } from "@/lib/analysis/stepBuilder";
 import { settlePendingSteps } from "@/lib/analysis/settlement";
-import { FixtureStatus } from "@/lib/constants";
+import { FixtureStatus, STEP_LOOKAHEAD_DAYS } from "@/lib/constants";
 
 /**
- * Full daily pipeline: re-analyze every scheduled fixture with odds data, rebuild today's
- * Step 5 from the fresh predictions, and settle any pending Steps whose fixtures have finished.
+ * Full daily pipeline: re-analyze every scheduled fixture within the Step 5 lookahead window,
+ * rebuild today's Step 5 from the fresh predictions, and settle any pending Steps whose
+ * fixtures have finished.
  */
 async function handler(request: NextRequest) {
   const unauthorized = requireCronSecret(request);
@@ -16,10 +17,10 @@ async function handler(request: NextRequest) {
 
   const dayStart = new Date();
   dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+  const lookaheadEnd = new Date(dayStart.getTime() + STEP_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000);
 
   const fixtures = await prisma.fixture.findMany({
-    where: { status: FixtureStatus.SCHEDULED, kickoffAt: { gte: dayStart, lt: dayEnd } },
+    where: { status: FixtureStatus.SCHEDULED, kickoffAt: { gte: new Date(), lt: lookaheadEnd } },
   });
 
   let analyzed = 0;

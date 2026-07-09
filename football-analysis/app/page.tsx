@@ -28,7 +28,8 @@ export default async function TodayPage() {
         <p className="text-xs font-medium uppercase tracking-wide text-accent">Step 5 วันนี้</p>
         <h1 className="text-2xl font-bold text-text-primary">{formatMatchDate(dayStart)}</h1>
         <p className="mt-1 text-sm text-text-secondary">
-          5 คู่ที่ระบบวิเคราะห์แล้วว่าราคาน้ำให้ &ldquo;คุณค่า&rdquo; สูงสุดวันนี้ — เทียบจากราคาน้ำจริง ไม่ใช่แค่ทายผลแพ้ชนะ
+          5 คู่ที่ระบบวิเคราะห์แล้วว่าราคาน้ำให้ &ldquo;คุณค่า&rdquo; สูงสุดตอนนี้ (คู่ที่ยังไม่เตะ ภายในไม่กี่วันข้างหน้า) —
+          เทียบจากราคาน้ำจริง ไม่ใช่แค่ทายผลแพ้ชนะ
         </p>
       </header>
 
@@ -67,9 +68,10 @@ export default async function TodayPage() {
 function EmptyState() {
   return (
     <div className="mt-8 rounded-2xl border border-dashed border-border-subtle p-6 text-center">
-      <p className="text-sm text-text-secondary">ยังไม่มี Step 5 สำหรับวันนี้</p>
+      <p className="text-sm text-text-secondary">ยังไม่มี Step 5 ตอนนี้</p>
       <p className="mt-1 text-xs text-text-muted">
-        ระบบจะสร้างสเต็ปใหม่หลังดึงราคาน้ำและวิเคราะห์คู่แข่งขันของวันนี้เสร็จ (ตามรอบเวลาที่ตั้งไว้)
+        อาจเป็นเพราะยังไม่มีการวิเคราะห์รอบล่าสุด หรือช่วงนี้ลีกที่ติดตามอยู่ไม่มีแมตช์ในไม่กี่วันข้างหน้า
+        (เช่นเป็นช่วงพักฤดูกาล) ระบบจะสร้างสเต็ปใหม่ทันทีที่มีคู่แข่งขันและราคาน้ำเข้ามา
       </p>
     </div>
   );

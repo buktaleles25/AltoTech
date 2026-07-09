@@ -54,8 +54,11 @@ async function ingestOddsFromMock(): Promise<{ snapshots: number }> {
   return { snapshots: count };
 }
 
+const INGEST_HORIZON_DAYS = 10;
+
 async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
   const apiKey = requireEnv("ODDS_API_KEY");
+  const horizon = new Date(Date.now() + INGEST_HORIZON_DAYS * 24 * 60 * 60 * 1000);
   let count = 0;
 
   for (const league of TRACKED_LEAGUES) {
@@ -67,6 +70,7 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
     }
     const events = (await res.json()) as Array<{
       id: string;
+      commence_time: string;
       home_team: string;
       away_team: string;
       bookmakers: Array<{
@@ -77,26 +81,28 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
     }>;
 
     for (const event of events) {
-      // The Odds API and API-Football have no shared fixture id, so the first time we see an
-      // event we match it to an already-ingested Fixture by team name + matchday and remember
-      // the link via oddsApiId; subsequent polls hit that direct id.
-      let fixture = await prisma.fixture.findFirst({ where: { oddsApiId: event.id } });
-      if (!fixture) {
-        const dayStart = new Date(new Date().toDateString());
-        const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-        fixture = await prisma.fixture.findFirst({
-          where: {
-            league: league.name,
-            kickoffAt: { gte: dayStart, lt: dayEnd },
-            homeTeam: { name: event.home_team },
-            awayTeam: { name: event.away_team },
-          },
-        });
-        if (fixture) {
-          await prisma.fixture.update({ where: { id: fixture.id }, data: { oddsApiId: event.id } });
-        }
-      }
-      if (!fixture) continue; // fixture not yet ingested by ingestFixtures for this matchday
+      if (new Date(event.commence_time) > horizon) continue; // keep only near-term matches
+
+      // The Odds API is the source of truth for fixture identity here — API-Football's free tier
+      // only covers historical seasons (2021-2024), so it can't supply current-season fixtures.
+      // Upsert by oddsApiId (the natural key for this source) and create the Team/Fixture rows
+      // directly from the odds event if this is the first time we've seen it.
+      const [homeTeam, awayTeam] = await Promise.all([
+        upsertTeamByName(event.home_team, league.name, league.country),
+        upsertTeamByName(event.away_team, league.name, league.country),
+      ]);
+
+      const fixture = await prisma.fixture.upsert({
+        where: { oddsApiId: event.id },
+        update: {},
+        create: {
+          oddsApiId: event.id,
+          homeTeamId: homeTeam.id,
+          awayTeamId: awayTeam.id,
+          league: league.name,
+          kickoffAt: new Date(event.commence_time),
+        },
+      });
 
       const isFirstSnapshotForFixture =
         (await prisma.oddsSnapshot.count({ where: { fixtureId: fixture.id } })) === 0;
@@ -130,4 +136,11 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
   }
 
   return { snapshots: count };
+}
+
+/** Find-or-create a Team by name — The Odds API identifies teams by name only, no stable id. */
+async function upsertTeamByName(name: string, league: string, country: string) {
+  const existing = await prisma.team.findFirst({ where: { name, league } });
+  if (existing) return existing;
+  return prisma.team.create({ data: { name, shortName: name, league, country } });
 }
