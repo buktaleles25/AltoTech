@@ -7,7 +7,7 @@ import OddsMovementBars from "@/components/OddsMovementBars";
 import LineupFormation, { type MissingPlayer } from "@/components/LineupFormation";
 import NewsFeedItem from "@/components/NewsFeedItem";
 import DisclaimerNote from "@/components/DisclaimerNote";
-import { formatEdge, formatKickoff, formatMatchDate, formatOdds } from "@/lib/format";
+import { betLabel, formatEdge, formatKickoff, formatMatchDate, formatOdds } from "@/lib/format";
 
 export default async function FixtureDetailPage(props: PageProps<"/fixtures/[id]">) {
   const { id } = await props.params;
@@ -20,6 +20,7 @@ export default async function FixtureDetailPage(props: PageProps<"/fixtures/[id]
       oddsSnapshots: { orderBy: { capturedAt: "asc" } },
       lineups: true,
       modelPredictions: { orderBy: { computedAt: "desc" }, take: 1 },
+      picks: { orderBy: { edge: "desc" } },
     },
   });
 
@@ -58,6 +59,27 @@ export default async function FixtureDetailPage(props: PageProps<"/fixtures/[id]
         </div>
       </header>
 
+      {fixture.picks.length > 0 && (
+        <section className="mt-4 rounded-2xl border border-accent-strong/30 bg-gradient-to-br from-accent-soft to-transparent p-4">
+          <p className="mb-2 text-sm font-medium text-text-primary">บิลที่ระบบแนะนำ</p>
+          <div className="flex flex-col gap-2">
+            {fixture.picks.map((pick) => (
+              <div key={pick.id} className="flex items-center justify-between gap-2 rounded-xl bg-surface p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-text-primary">
+                    {betLabel(pick.market, pick.side, pick.line, fixture.homeTeam.name, fixture.awayTeam.name)}
+                  </p>
+                  <p className="text-[11px] text-text-muted">
+                    ที่ {pick.bookmaker} · EV {formatEdge(pick.edge)} · มั่นใจ {pick.confidence}%
+                  </p>
+                </div>
+                <span className="shrink-0 font-mono text-xl font-bold text-accent">{formatOdds(pick.odds)}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {prediction && (
         <section className="mt-4 rounded-2xl border border-border-subtle bg-surface p-4">
           <div className="mb-2 flex items-center justify-between">
@@ -65,11 +87,16 @@ export default async function FixtureDetailPage(props: PageProps<"/fixtures/[id]
             <ConfidenceBadge confidence={prediction.confidenceScore} />
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <ProbCell label="เจ้าบ้าน" prob={prediction.modelHomeProb} edge={prediction.edgeHome} />
+            <ProbCell label="เจ้าบ้านชนะ" prob={prediction.modelHomeProb} edge={prediction.edgeHome} />
             <ProbCell label="เสมอ" prob={prediction.modelDrawProb} edge={prediction.edgeDraw} />
-            <ProbCell label="ทีมเยือน" prob={prediction.modelAwayProb} edge={prediction.edgeAway} />
+            <ProbCell label="ทีมเยือนชนะ" prob={prediction.modelAwayProb} edge={prediction.edgeAway} />
           </div>
-          {prediction.reasoning && <p className="mt-3 text-xs leading-relaxed text-text-secondary">{prediction.reasoning}</p>}
+          {prediction.expectedGoalsHome != null && prediction.expectedGoalsAway != null && (
+            <p className="mt-3 text-[11px] text-text-muted">
+              คาดการณ์ประตู (โมเดล): {prediction.expectedGoalsHome.toFixed(2)} - {prediction.expectedGoalsAway.toFixed(2)}
+            </p>
+          )}
+          {prediction.reasoning && <p className="mt-1 text-xs leading-relaxed text-text-secondary">{prediction.reasoning}</p>}
         </section>
       )}
 

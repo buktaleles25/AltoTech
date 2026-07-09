@@ -28,7 +28,7 @@ export default function PnlChart({ points }: { points: Point[] }) {
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between">
-        <p className="text-xs text-text-secondary">กำไร/ขาดทุนสะสม (หน่วยเดิมพันคงที่ 1 หน่วย/สเต็ป)</p>
+        <p className="text-xs text-text-secondary">กำไร/ขาดทุนสะสม (ลงเท่ากันทุกบิล 1 หน่วย)</p>
         <p className={`font-mono text-sm font-semibold ${isPositive ? "text-accent" : "text-danger"}`}>
           {isPositive ? "+" : ""}
           {latest.toFixed(2)}u

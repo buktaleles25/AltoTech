@@ -1,5 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { deVig, overroundOf } from "./devig";
+import { deVig, overroundOf, deVigTwoWay } from "./devig";
+
+describe("deVigTwoWay", () => {
+  it("returns probabilities that sum to 1", () => {
+    const r = deVigTwoWay(1.95, 1.95);
+    expect(r.a + r.b).toBeCloseTo(1, 10);
+  });
+
+  it("a fair two-way market (2.0 / 2.0) de-vigs to 0.5 / 0.5", () => {
+    const r = deVigTwoWay(2.0, 2.0);
+    expect(r.a).toBeCloseTo(0.5, 10);
+    expect(r.b).toBeCloseTo(0.5, 10);
+  });
+
+  it("the shorter price carries the higher probability", () => {
+    const r = deVigTwoWay(1.5, 2.7);
+    expect(r.a).toBeGreaterThan(r.b);
+  });
+});
 
 describe("deVig", () => {
   it("returns probabilities that sum to 1", () => {

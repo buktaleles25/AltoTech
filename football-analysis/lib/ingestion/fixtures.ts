@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db";
-import { FixtureStatus, TRACKED_LEAGUES } from "@/lib/constants";
-import { apiFootballFetch, hoursFromNow, readMockJson, USE_MOCK_DATA } from "./util";
+import { hoursFromNow, readMockJson, USE_MOCK_DATA } from "./util";
 
 type MockTeam = {
   id: string;
@@ -20,13 +19,14 @@ type MockFixture = {
 };
 
 /**
- * Pulls today's fixture list for every tracked league and upserts Team + Fixture rows.
- * Real mode: API-Football `/fixtures?date=YYYY-MM-DD&league={id}&season={year}` — one request
- * per tracked league, well within the 100 req/day free-tier budget for a daily 06:00 run.
+ * Upserts Team + Fixture rows.
+ * - Mock mode: from mock/teams.json + mock/fixtures.json.
+ * - Real mode: NO-OP. Fixtures come directly from odds ingestion (lib/ingestion/odds.ts), because
+ *   the only free fixture source we had (API-Football) is historical-only on its free tier.
  */
 export async function ingestFixtures(): Promise<{ teams: number; fixtures: number }> {
   if (USE_MOCK_DATA) return ingestFixturesFromMock();
-  return ingestFixturesFromApiFootball();
+  return { teams: 0, fixtures: 0 };
 }
 
 async function ingestFixturesFromMock(): Promise<{ teams: number; fixtures: number }> {
@@ -63,91 +63,4 @@ async function ingestFixturesFromMock(): Promise<{ teams: number; fixtures: numb
   }
 
   return { teams: teams.length, fixtures: fixtures.length };
-}
-
-async function ingestFixturesFromApiFootball(): Promise<{ teams: number; fixtures: number }> {
-  const season = new Date().getFullYear();
-  const date = new Date().toISOString().slice(0, 10);
-
-  let teamCount = 0;
-  let fixtureCount = 0;
-
-  for (const league of TRACKED_LEAGUES) {
-    const res = await apiFootballFetch(`/fixtures?date=${date}&league=${league.apiFootballLeagueId}&season=${season}`);
-    if (!res.ok) {
-      console.error(`API-Football fixtures request failed for ${league.name}: ${res.status}`);
-      continue;
-    }
-    const body = (await res.json()) as {
-      response: Array<{
-        fixture: { id: number; date: string; status: { short: string } };
-        teams: {
-          home: { id: number; name: string; logo: string };
-          away: { id: number; name: string; logo: string };
-        };
-      }>;
-    };
-
-    for (const item of body.response) {
-      const home = await upsertApiFootballTeam(item.teams.home, league.name, league.country);
-      const away = await upsertApiFootballTeam(item.teams.away, league.name, league.country);
-      teamCount += 2;
-
-      await prisma.fixture.upsert({
-        where: { apiFootballId: String(item.fixture.id) },
-        update: { status: mapApiFootballStatus(item.fixture.status.short) },
-        create: {
-          apiFootballId: String(item.fixture.id),
-          homeTeamId: home.id,
-          awayTeamId: away.id,
-          league: league.name,
-          kickoffAt: new Date(item.fixture.date),
-          status: mapApiFootballStatus(item.fixture.status.short),
-        },
-      });
-      fixtureCount += 1;
-    }
-  }
-
-  return { teams: teamCount, fixtures: fixtureCount };
-}
-
-async function upsertApiFootballTeam(
-  team: { id: number; name: string; logo: string },
-  league: string,
-  country: string,
-) {
-  return prisma.team.upsert({
-    where: { apiFootballId: String(team.id) },
-    update: { name: team.name, logoUrl: team.logo },
-    create: {
-      apiFootballId: String(team.id),
-      name: team.name,
-      shortName: team.name,
-      league,
-      country,
-      logoUrl: team.logo,
-    },
-  });
-}
-
-function mapApiFootballStatus(short: string): string {
-  switch (short) {
-    case "FT":
-    case "AET":
-    case "PEN":
-      return FixtureStatus.FINISHED;
-    case "1H":
-    case "2H":
-    case "HT":
-    case "LIVE":
-      return FixtureStatus.LIVE;
-    case "PST":
-      return FixtureStatus.POSTPONED;
-    case "CANC":
-    case "ABD":
-      return FixtureStatus.CANCELLED;
-    default:
-      return FixtureStatus.SCHEDULED;
-  }
 }

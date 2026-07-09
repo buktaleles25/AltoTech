@@ -30,3 +30,17 @@ export function overroundOf(odds: ThreeWayOdds): number {
   const rawDraw = odds.draw ? 1 / odds.draw : 0;
   return rawHome + rawAway + rawDraw - 1;
 }
+
+export type TwoWayProbability = { a: number; b: number };
+
+/**
+ * De-vigs a two-outcome market (Asian Handicap or Over/Under, which have no draw) into fair
+ * probabilities that sum to 1. Same multiplicative method as the three-way `deVig`: raw implied
+ * probability is 1/odds per side, and each is divided by the summed overround.
+ */
+export function deVigTwoWay(oddsA: number, oddsB: number): TwoWayProbability {
+  const rawA = 1 / oddsA;
+  const rawB = 1 / oddsB;
+  const overround = rawA + rawB;
+  return { a: rawA / overround, b: rawB / overround };
+}

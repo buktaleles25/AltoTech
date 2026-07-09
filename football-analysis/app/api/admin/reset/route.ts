@@ -12,13 +12,12 @@ export async function POST(request: NextRequest) {
   if (unauthorized) return unauthorized;
 
   await prisma.$transaction([
-    prisma.stepResult.deleteMany(),
-    prisma.stepLeg.deleteMany(),
-    prisma.step.deleteMany(),
+    prisma.pick.deleteMany(),
     prisma.modelPrediction.deleteMany(),
+    prisma.marketQuote.deleteMany(),
+    prisma.oddsSnapshot.deleteMany(),
     prisma.newsItem.deleteMany(),
     prisma.lineup.deleteMany(),
-    prisma.oddsSnapshot.deleteMany(),
     prisma.fixture.deleteMany(),
     prisma.team.deleteMany(),
   ]);

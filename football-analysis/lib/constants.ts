@@ -10,34 +10,38 @@ export const FixtureStatus = {
 } as const;
 export type FixtureStatus = (typeof FixtureStatus)[keyof typeof FixtureStatus];
 
-export const StepStatus = {
-  PENDING: "PENDING",
-  SETTLED: "SETTLED",
+/** Bet markets. AH = Asian Handicap (spreads), OU = Over/Under (totals), H2H = 1X2 moneyline. */
+export const BetMarket = {
+  H2H: "H2H",
+  AH: "AH",
+  OU: "OU",
 } as const;
-export type StepStatus = (typeof StepStatus)[keyof typeof StepStatus];
+export type BetMarket = (typeof BetMarket)[keyof typeof BetMarket];
 
-export const StepOutcome = {
-  PENDING: "PENDING",
-  WIN: "WIN",
-  LOSE: "LOSE",
-  VOID: "VOID",
-} as const;
-export type StepOutcome = (typeof StepOutcome)[keyof typeof StepOutcome];
-
-export const Selection = {
+/** Which side of a market a Pick is on. */
+export const PickSide = {
   HOME: "HOME",
   DRAW: "DRAW",
   AWAY: "AWAY",
+  OVER: "OVER",
+  UNDER: "UNDER",
 } as const;
-export type Selection = (typeof Selection)[keyof typeof Selection];
+export type PickSide = (typeof PickSide)[keyof typeof PickSide];
 
-export const LegResult = {
+/** Settlement state of a single Pick (Asian lines can half-win / half-lose / push). */
+export const PickResult = {
   PENDING: "PENDING",
   WON: "WON",
+  HALF_WON: "HALF_WON",
+  PUSH: "PUSH",
+  HALF_LOST: "HALF_LOST",
   LOST: "LOST",
   VOID: "VOID",
 } as const;
-export type LegResult = (typeof LegResult)[keyof typeof LegResult];
+export type PickResult = (typeof PickResult)[keyof typeof PickResult];
+
+/** The Odds API market keys we ingest, and how each maps to our internal market. */
+export const ODDS_API_MARKETS = ["h2h", "spreads", "totals"] as const;
 
 /**
  * Leagues tracked by the ingestion jobs.
@@ -54,43 +58,50 @@ export type LegResult = (typeof LegResult)[keyof typeof LegResult];
 export const TRACKED_LEAGUES = [
   // FIFA World Cup 2026 (Jun 11 - Jul 19) — check this FIRST, it outranks every league in
   // relevance whenever it's actually running.
-  { oddsApiKey: "soccer_fifa_world_cup", apiFootballLeagueId: 1, name: "FIFA World Cup", country: "World" },
-  { oddsApiKey: "soccer_epl", apiFootballLeagueId: 39, name: "Premier League", country: "England" },
-  { oddsApiKey: "soccer_spain_la_liga", apiFootballLeagueId: 140, name: "La Liga", country: "Spain" },
-  { oddsApiKey: "soccer_italy_serie_a", apiFootballLeagueId: 135, name: "Serie A", country: "Italy" },
-  { oddsApiKey: "soccer_germany_bundesliga", apiFootballLeagueId: 78, name: "Bundesliga", country: "Germany" },
-  { oddsApiKey: "soccer_uefa_champs_league", apiFootballLeagueId: 2, name: "Champions League", country: "Europe" },
-  // Summer-active leagues (keep the Step 5 populated during the European off-season):
-  { oddsApiKey: "soccer_brazil_campeonato", apiFootballLeagueId: 71, name: "Brasileirão Série A", country: "Brazil" },
-  { oddsApiKey: "soccer_usa_mls", apiFootballLeagueId: 253, name: "MLS", country: "USA" },
-  { oddsApiKey: "soccer_korea_kleague1", apiFootballLeagueId: 292, name: "K League 1", country: "South Korea" },
-  { oddsApiKey: "soccer_norway_eliteserien", apiFootballLeagueId: 103, name: "Eliteserien", country: "Norway" },
-  { oddsApiKey: "soccer_sweden_allsvenskan", apiFootballLeagueId: 113, name: "Allsvenskan", country: "Sweden" },
+  // - footballDataCode: competition code on football-data.org (strengthens the model with real
+  //   current-season goals data); undefined ⇒ market-only for that league.
+  // - defaultTotalGoals: league-average total goals, used as the totals prior when the market has
+  //   no Over/Under line for a fixture.
+  { oddsApiKey: "soccer_fifa_world_cup", footballDataCode: "WC", name: "FIFA World Cup", country: "World", defaultTotalGoals: 2.6 },
+  { oddsApiKey: "soccer_epl", footballDataCode: "PL", name: "Premier League", country: "England", defaultTotalGoals: 2.8 },
+  { oddsApiKey: "soccer_spain_la_liga", footballDataCode: "PD", name: "La Liga", country: "Spain", defaultTotalGoals: 2.5 },
+  { oddsApiKey: "soccer_italy_serie_a", footballDataCode: "SA", name: "Serie A", country: "Italy", defaultTotalGoals: 2.7 },
+  { oddsApiKey: "soccer_germany_bundesliga", footballDataCode: "BL1", name: "Bundesliga", country: "Germany", defaultTotalGoals: 3.1 },
+  { oddsApiKey: "soccer_uefa_champs_league", footballDataCode: "CL", name: "Champions League", country: "Europe", defaultTotalGoals: 2.8 },
+  { oddsApiKey: "soccer_brazil_campeonato", footballDataCode: "BSA", name: "Brasileirão Série A", country: "Brazil", defaultTotalGoals: 2.4 },
+  // Summer-active leagues NOT on football-data.org free tier → market-only model:
+  { oddsApiKey: "soccer_usa_mls", footballDataCode: undefined, name: "MLS", country: "USA", defaultTotalGoals: 3.0 },
+  { oddsApiKey: "soccer_korea_kleague1", footballDataCode: undefined, name: "K League 1", country: "South Korea", defaultTotalGoals: 2.5 },
+  { oddsApiKey: "soccer_norway_eliteserien", footballDataCode: undefined, name: "Eliteserien", country: "Norway", defaultTotalGoals: 3.0 },
+  { oddsApiKey: "soccer_sweden_allsvenskan", footballDataCode: undefined, name: "Allsvenskan", country: "Sweden", defaultTotalGoals: 2.9 },
 ] as const;
 
-/** Minimum edge (model probability − implied probability) to count as a value pick. */
-export const VALUE_EDGE_THRESHOLD = 0.03;
+/** Fallback expected total goals for any league not in the table above. */
+export const DEFAULT_TOTAL_GOALS = 2.6;
 
-/** Minimum confidence (0-100) a leg needs to be included in the Step 5 without a low-confidence flag. */
-export const MIN_STEP_CONFIDENCE = 50;
+/** Minimum expected value (per unit stake at best price) for a bet to be recommended. */
+export const VALUE_EDGE_THRESHOLD = 0.02;
+
+/** Minimum confidence (0-100) for a Pick to be surfaced on the daily board. */
+export const MIN_PICK_CONFIDENCE = 45;
+
+/** Max recommended bets stored per fixture (the best few by EV); the daily board ranks across all. */
+export const MAX_PICKS_PER_FIXTURE = 2;
+
+/** Dixon-Coles low-score correction strength. */
+export const DIXON_COLES_RHO = -0.08;
+
+/**
+ * Weight on our independent supremacy estimate vs. the market's. Small on purpose: our free-data
+ * signal is far thinner than the market's, so we only nudge — we don't override the sharp price.
+ */
+export const MODEL_SUPREMACY_WEIGHT = 0.25;
 
 /** Odds-implied-probability shift (absolute) between opening and current line that counts as a "steam move". */
 export const STEAM_MOVE_THRESHOLD = 0.03;
 
-/** Target legs for a full-strength Step. */
-export const LEGS_PER_STEP = 5;
-
 /**
- * The Step only ever draws from a single calendar day's matches, so every leg settles together —
- * mixing kickoff days into one accumulator was confusing. If fewer than this many matches clear
- * the value/confidence bar on a given day, no Step is published that day rather than padding it
- * out with picks that don't actually clear the bar.
+ * How far ahead `/api/analyze/run` re-analyzes fixtures to keep the Fixtures browse list fresh.
+ * The daily board itself only ever shows same-day kickoffs.
  */
-export const MIN_STEP_LEGS = 3;
-
-/**
- * How far ahead `/api/analyze/run` re-analyzes fixtures (separate from the Step's same-day
- * window above) — this just keeps the Fixtures browse list populated with fresh predictions for
- * the next few days, it doesn't widen what the Step itself draws from.
- */
-export const STEP_LOOKAHEAD_DAYS = 3;
+export const ANALYZE_LOOKAHEAD_DAYS = 3;

@@ -2,39 +2,43 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireCronSecret } from "@/lib/cronAuth";
 import { prisma } from "@/lib/db";
 import { analyzeFixture } from "@/lib/analysis/analyze";
-import { buildDailyStep } from "@/lib/analysis/stepBuilder";
-import { settlePendingSteps } from "@/lib/analysis/settlement";
-import { FixtureStatus, STEP_LOOKAHEAD_DAYS } from "@/lib/constants";
+import { settlePendingPicks } from "@/lib/analysis/settlement";
+import { ingestTeamStrength } from "@/lib/ingestion/footballData";
+import { FixtureStatus, ANALYZE_LOOKAHEAD_DAYS } from "@/lib/constants";
 
 /**
- * Full daily pipeline: re-analyze every scheduled fixture within the Step 5 lookahead window,
- * rebuild today's Step 5 from the fresh predictions, and settle any pending Steps whose
- * fixtures have finished.
+ * Daily pipeline: refresh current-season team strength (football-data.org, if configured),
+ * re-analyze every scheduled fixture within the lookahead window into recommended Picks, then
+ * settle any pending Picks whose fixtures have finished.
  */
 async function handler(request: NextRequest) {
   const unauthorized = requireCronSecret(request);
   if (unauthorized) return unauthorized;
 
-  const dayStart = new Date();
-  dayStart.setHours(0, 0, 0, 0);
-  const lookaheadEnd = new Date(dayStart.getTime() + STEP_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000);
+  const strength = await ingestTeamStrength();
 
+  const now = new Date();
+  const lookaheadEnd = new Date(now.getTime() + ANALYZE_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000);
   const fixtures = await prisma.fixture.findMany({
-    where: { status: FixtureStatus.SCHEDULED, kickoffAt: { gte: new Date(), lt: lookaheadEnd } },
+    where: { status: FixtureStatus.SCHEDULED, kickoffAt: { gte: now, lt: lookaheadEnd } },
+    select: { id: true },
   });
 
   let analyzed = 0;
+  let picks = 0;
   for (const fixture of fixtures) {
     const result = await analyzeFixture(fixture.id);
-    if (result) analyzed += 1;
+    if (result) {
+      analyzed += 1;
+      picks += result.picks;
+    }
   }
 
-  const step = await buildDailyStep(dayStart);
-  const settlement = await settlePendingSteps();
+  const settlement = await settlePendingPicks();
 
-  return NextResponse.json({ ok: true, analyzed, step, settlement });
+  return NextResponse.json({ ok: true, strength, analyzed, picks, settlement });
 }
 
-// POST: called by worker/scheduler.ts and manual curl. GET: Vercel Cron always calls via GET.
+// POST: worker/scheduler.ts + manual curl. GET: Vercel Cron always calls via GET.
 export const POST = handler;
 export const GET = handler;

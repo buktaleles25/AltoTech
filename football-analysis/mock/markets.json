@@ -1,0 +1,27 @@
+[
+  { "fixtureId": "fx-today-1", "bookmaker": "Pinnacle", "market": "SPREAD", "line": -0.5, "homeOrOverOdds": 1.90, "awayOrUnderOdds": 2.00, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-1", "bookmaker": "SoftBook", "market": "SPREAD", "line": -0.5, "homeOrOverOdds": 2.05, "awayOrUnderOdds": 1.88, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-1", "bookmaker": "Pinnacle", "market": "TOTAL", "line": 2.5, "homeOrOverOdds": 1.95, "awayOrUnderOdds": 1.90, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-1", "bookmaker": "SoftBook", "market": "TOTAL", "line": 2.5, "homeOrOverOdds": 2.02, "awayOrUnderOdds": 1.83, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-2", "bookmaker": "Pinnacle", "market": "SPREAD", "line": -0.25, "homeOrOverOdds": 1.92, "awayOrUnderOdds": 1.98, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-2", "bookmaker": "SoftBook", "market": "SPREAD", "line": -0.25, "homeOrOverOdds": 1.90, "awayOrUnderOdds": 2.08, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-2", "bookmaker": "Pinnacle", "market": "TOTAL", "line": 2.5, "homeOrOverOdds": 1.90, "awayOrUnderOdds": 1.95, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-3", "bookmaker": "Pinnacle", "market": "SPREAD", "line": -1.0, "homeOrOverOdds": 1.95, "awayOrUnderOdds": 1.90, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-3", "bookmaker": "SoftBook", "market": "SPREAD", "line": -1.0, "homeOrOverOdds": 2.06, "awayOrUnderOdds": 1.82, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-3", "bookmaker": "Pinnacle", "market": "TOTAL", "line": 2.5, "homeOrOverOdds": 1.88, "awayOrUnderOdds": 1.97, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-5", "bookmaker": "Pinnacle", "market": "SPREAD", "line": -0.5, "homeOrOverOdds": 1.91, "awayOrUnderOdds": 1.99, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-5", "bookmaker": "SoftBook", "market": "SPREAD", "line": -0.5, "homeOrOverOdds": 1.89, "awayOrUnderOdds": 2.10, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-5", "bookmaker": "Pinnacle", "market": "TOTAL", "line": 2.5, "homeOrOverOdds": 2.00, "awayOrUnderOdds": 1.85, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-5", "bookmaker": "SoftBook", "market": "TOTAL", "line": 2.5, "homeOrOverOdds": 1.95, "awayOrUnderOdds": 1.98, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-7", "bookmaker": "Pinnacle", "market": "SPREAD", "line": -0.75, "homeOrOverOdds": 1.93, "awayOrUnderOdds": 1.97, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-7", "bookmaker": "SoftBook", "market": "SPREAD", "line": -0.75, "homeOrOverOdds": 2.04, "awayOrUnderOdds": 1.85, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-7", "bookmaker": "Pinnacle", "market": "TOTAL", "line": 3.0, "homeOrOverOdds": 1.92, "awayOrUnderOdds": 1.95, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-9", "bookmaker": "Pinnacle", "market": "SPREAD", "line": -1.0, "homeOrOverOdds": 1.96, "awayOrUnderOdds": 1.89, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-9", "bookmaker": "SoftBook", "market": "SPREAD", "line": -1.0, "homeOrOverOdds": 2.08, "awayOrUnderOdds": 1.80, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-9", "bookmaker": "Pinnacle", "market": "TOTAL", "line": 2.5, "homeOrOverOdds": 1.90, "awayOrUnderOdds": 1.95, "capturedAtOffsetHours": -1 }
+]

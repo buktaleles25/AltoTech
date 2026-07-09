@@ -1,14 +1,21 @@
 # Step 5 — วิเคราะห์ผลบอลตามราคาน้ำจริง
 
-Mobile-first PWA that analyzes football matches from **real bookmaker odds** — not
-just win/lose predictions — and publishes a daily **"Step 5"**: a 5-leg accumulator
-of the day's best value picks, each backed by de-vigged implied probability, a
-market-anchored model estimate, lineup/injury news, and odds-movement (steam move)
-detection.
+Mobile-first PWA that finds **value bets** from **real bookmaker odds** across three
+markets — **Asian Handicap (ต่อ/รอง)**, **Over/Under (สูง/ต่ำ)**, and **1X2** — and
+publishes them as a daily list of individual recommended single bets. Each bet names
+the exact market + line, the best available price and which bookmaker offers it, the
+model's expected value (EV), and a confidence score.
 
-See `/root/.claude/plans/line-up-zippy-cocke.md` in the original build session for
-the full design rationale, or read `app/settings/page.tsx` for the in-app
-"how it works" explainer.
+Under the hood it fits a **Dixon-Coles Poisson score model** to the de-vigged sharp
+market (Pinnacle), nudges it with current-season goals data (football-data.org), then
+prices every handicap/total/moneyline line off that one distribution and compares to
+the market — surfacing value mainly via best-price line-shopping plus small model tilts.
+
+**Honesty note (also shown in-app):** the model is market-anchored, not a magic
+winning formula. No system is "more accurate than every tipster" or guarantees profit.
+
+See `/root/.claude/plans/line-up-zippy-cocke.md` (the `v2` section) for the full design
+rationale, or `app/settings/page.tsx` for the in-app "how it works" explainer.
 
 **This is an analytics/information tool only.** It does not place bets, accept
 wagers, or process payments — see the disclaimer on the Settings screen.
@@ -60,13 +67,17 @@ Set `USE_MOCK_DATA=false` in `.env` and fill in:
 
 | Env var | Where to get it | Free tier |
 |---|---|---|
-| `ODDS_API_KEY` | [the-odds-api.com](https://the-odds-api.com) — real bookmaker odds | 500 requests/month |
-| `APIFOOTBALL_KEY` | [dashboard.api-football.com/register](https://dashboard.api-football.com/register) — fixtures, lineups, injuries, team stats | 100 requests/day |
+| `ODDS_API_KEY` | [the-odds-api.com](https://the-odds-api.com) — 1X2 + Asian Handicap + Over/Under odds | 500 requests/month |
+| `FOOTBALLDATA_KEY` (optional) | [football-data.org/client/register](https://www.football-data.org/client/register) — current-season goals for/against | 10 requests/min |
 
-`APIFOOTBALL_KEY` (direct api-sports.io signup) and `RAPIDAPI_KEY` ([API-Football on
-RapidAPI](https://rapidapi.com/api-sports/api/api-football)) are two auth paths to the same
-data — `lib/ingestion/util.ts#apiFootballFetch` picks whichever is set (direct key preferred).
-Use whichever signup flow actually works for you.
+`FOOTBALLDATA_KEY` is optional: with it, the model is strengthened with real current-season
+goals data for the World Cup, Brazil, and the big-5 European leagues + Champions League; without
+it, the model runs market-only everywhere. (MLS / K-League / Nordic leagues aren't on the
+football-data.org free tier, so they're always market-only.)
+
+Quota note: The Odds API charges `markets × regions` per request, so `h2h,spreads,totals` × `eu`
+= 3 credits per league per pull. The scheduler pulls active leagues once per morning (+ one
+near-kickoff refresh), keeping usage inside the 500/month tier.
 
 News ingestion (`lib/ingestion/news.ts`) uses free RSS feeds (BBC Sport, ESPN FC, Sky
 Sports) — no key required. The ingestion cadence in `worker/scheduler.ts` is deliberately

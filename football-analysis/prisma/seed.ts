@@ -5,48 +5,41 @@ import { ingestOdds } from "@/lib/ingestion/odds";
 import { ingestLineups } from "@/lib/ingestion/lineups";
 import { ingestNews } from "@/lib/ingestion/news";
 import { analyzeFixture } from "@/lib/analysis/analyze";
-import { buildDailyStep } from "@/lib/analysis/stepBuilder";
-import { FixtureStatus, LegResult, Selection, StepOutcome, StepStatus } from "@/lib/constants";
+import { FixtureStatus, PickResult } from "@/lib/constants";
 
 async function main() {
   console.log("Seeding today's matchday from mock data...");
-  const fixtureResult = await ingestFixtures();
-  console.log(`  teams: ${fixtureResult.teams}, fixtures: ${fixtureResult.fixtures}`);
+  const fx = await ingestFixtures();
+  console.log(`  teams: ${fx.teams}, fixtures: ${fx.fixtures}`);
+  const odds = await ingestOdds();
+  console.log(`  odds snapshots: ${odds.snapshots}, market quotes: ${odds.quotes}`);
+  const lineups = await ingestLineups();
+  console.log(`  lineups: ${lineups.upserts}`);
+  const news = await ingestNews();
+  console.log(`  news items: ${news.upserts}`);
 
-  const oddsResult = await ingestOdds();
-  console.log(`  odds snapshots: ${oddsResult.snapshots}`);
-
-  const lineupResult = await ingestLineups();
-  console.log(`  lineups: ${lineupResult.upserts}`);
-
-  const newsResult = await ingestNews();
-  console.log(`  news items: ${newsResult.upserts}`);
-
-  console.log("Running analysis engine on today's fixtures...");
-  const todaysFixtures = await prisma.fixture.findMany({ where: { status: FixtureStatus.SCHEDULED } });
-  for (const fixture of todaysFixtures) {
-    await analyzeFixture(fixture.id);
+  console.log("Running the value model on today's fixtures...");
+  const fixtures = await prisma.fixture.findMany({ where: { status: FixtureStatus.SCHEDULED } });
+  let totalPicks = 0;
+  for (const fixture of fixtures) {
+    const r = await analyzeFixture(fixture.id);
+    if (r) totalPicks += r.picks;
   }
-  console.log(`  analyzed ${todaysFixtures.length} fixtures`);
+  console.log(`  analyzed ${fixtures.length} fixtures → ${totalPicks} recommended bets`);
 
-  console.log("Building today's Step 5...");
-  const step = await buildDailyStep(new Date());
-  console.log(`  step ${step.stepId}: ${step.legCount} legs, fullStrength=${step.isFullStrength}`);
-
-  console.log("Seeding 3 days of historical settled Steps for the History screen...");
+  console.log("Seeding a few days of settled bet history...");
   await seedHistory();
 
   console.log("Done.");
 }
 
 /**
- * Demo-only synthetic history: fabricates finished fixtures and already-graded Steps for the
- * past 3 days so the History/Performance screen has something to show on a fresh install.
- * Real settlement (lib/analysis/settlement.ts) grades legs from actual finished fixtures —
- * this is purely seed data, not something the ingestion pipeline would produce.
+ * Demo-only synthetic history: fabricates finished fixtures and already-graded single Picks for
+ * the past few days so the History screen has something to show on a fresh install. Real
+ * settlement (lib/analysis/settlement.ts) grades picks from actual finished fixtures.
  */
 async function seedHistory() {
-  const historyTeamPairs: Array<[string, string, string]> = [
+  const teamPairs: Array<[string, string, string]> = [
     ["arsenal", "man-utd", "Premier League"],
     ["barcelona", "valencia", "La Liga"],
     ["inter-milan", "roma", "Serie A"],
@@ -54,13 +47,31 @@ async function seedHistory() {
     ["psg", "marseille", "Ligue 1"],
   ];
 
-  // day -1: 5/5 legs correct -> Step WIN
-  // day -2: 4/5 legs correct (1 lost) -> Step LOSE
-  // day -3: 3/5 legs correct (2 lost) -> Step LOSE
-  const days = [
-    { offset: -1, wrongLegIndexes: [] as number[] },
-    { offset: -2, wrongLegIndexes: [2] },
-    { offset: -3, wrongLegIndexes: [1, 4] },
+  // Each entry: [dayOffset, [ {market, side, line, odds, result} ... ] ]
+  const days: Array<{ offset: number; bets: Array<{ market: string; side: string; line: number | null; odds: number; result: string }> }> = [
+    {
+      offset: -1,
+      bets: [
+        { market: "AH", side: "HOME", line: -0.5, odds: 1.95, result: PickResult.WON },
+        { market: "OU", side: "OVER", line: 2.5, odds: 1.9, result: PickResult.WON },
+        { market: "AH", side: "AWAY", line: 0.5, odds: 2.0, result: PickResult.HALF_WON },
+      ],
+    },
+    {
+      offset: -2,
+      bets: [
+        { market: "AH", side: "HOME", line: -1.0, odds: 2.05, result: PickResult.LOST },
+        { market: "H2H", side: "HOME", line: null, odds: 2.4, result: PickResult.WON },
+      ],
+    },
+    {
+      offset: -3,
+      bets: [
+        { market: "OU", side: "UNDER", line: 2.5, odds: 1.95, result: PickResult.WON },
+        { market: "AH", side: "AWAY", line: -0.25, odds: 1.88, result: PickResult.HALF_LOST },
+        { market: "AH", side: "HOME", line: -0.75, odds: 1.9, result: PickResult.LOST },
+      ],
+    },
   ];
 
   for (const day of days) {
@@ -68,16 +79,10 @@ async function seedHistory() {
     dayDate.setHours(0, 0, 0, 0);
     dayDate.setDate(dayDate.getDate() + day.offset);
 
-    const legsData: Array<{ fixtureId: string; selection: string; odds: number; edge: number; confidence: number }> = [];
-
-    for (let i = 0; i < historyTeamPairs.length; i++) {
-      const [homeSlug, awaySlug, league] = historyTeamPairs[i];
+    for (let i = 0; i < day.bets.length; i++) {
+      const bet = day.bets[i];
+      const [homeSlug, awaySlug, league] = teamPairs[i % teamPairs.length];
       const fixtureId = `fx-hist-${day.offset}-${i}`;
-      const selection = i % 3 === 0 ? Selection.HOME : i % 3 === 1 ? Selection.AWAY : Selection.DRAW;
-      const wentWrong = day.wrongLegIndexes.includes(i);
-
-      // Score the fixture so `selection` is correct unless this leg is meant to lose.
-      const [homeScore, awayScore] = resultFor(selection, wentWrong);
 
       await prisma.fixture.upsert({
         where: { id: fixtureId },
@@ -89,66 +94,48 @@ async function seedHistory() {
           league,
           kickoffAt: new Date(dayDate.getTime() + (12 + i) * 60 * 60 * 1000),
           status: FixtureStatus.FINISHED,
-          homeScore,
-          awayScore,
+          homeScore: 2,
+          awayScore: 1,
         },
       });
 
-      legsData.push({ fixtureId, selection, odds: 1.8 + i * 0.3, edge: 0.06 + i * 0.01, confidence: 60 + i * 5 });
+      await prisma.pick.create({
+        data: {
+          fixtureId,
+          date: dayDate,
+          market: bet.market,
+          side: bet.side,
+          line: bet.line,
+          odds: bet.odds,
+          bookmaker: "SoftBook",
+          modelProb: 0.55,
+          fairProb: 0.5,
+          edge: 0.05,
+          confidence: 62,
+          reasoning: "ตัวอย่างประวัติ (seed)",
+          result: bet.result,
+          profitLossUnits: profitFor(bet.result, bet.odds),
+          settledAt: dayDate,
+        },
+      });
     }
-
-    const combinedOdds = legsData.reduce((p, l) => p * l.odds, 1);
-    const anyLost = day.wrongLegIndexes.length > 0;
-    const wonOdds = legsData
-      .filter((_, i) => !day.wrongLegIndexes.includes(i))
-      .reduce((p, l) => p * l.odds, 1);
-
-    const step = await prisma.step.upsert({
-      where: { date: dayDate },
-      update: {},
-      create: {
-        date: dayDate,
-        combinedOdds,
-        isFullStrength: true,
-        status: StepStatus.SETTLED,
-        resultOutcome: anyLost ? StepOutcome.LOSE : StepOutcome.WIN,
-      },
-    });
-
-    await prisma.stepLeg.deleteMany({ where: { stepId: step.id } });
-    await prisma.stepLeg.createMany({
-      data: legsData.map((leg, i) => ({
-        stepId: step.id,
-        fixtureId: leg.fixtureId,
-        selection: leg.selection,
-        odds: leg.odds,
-        edge: leg.edge,
-        confidence: leg.confidence,
-        legResult: day.wrongLegIndexes.includes(i) ? LegResult.LOST : LegResult.WON,
-      })),
-    });
-
-    await prisma.stepResult.upsert({
-      where: { stepId: step.id },
-      update: {},
-      create: {
-        stepId: step.id,
-        profitLossUnits: anyLost ? -1 : wonOdds - 1,
-        actualOutcomeJson: JSON.stringify(legsData.map((l, i) => ({ fixtureId: l.fixtureId, won: !day.wrongLegIndexes.includes(i) }))),
-      },
-    });
   }
 }
 
-function resultFor(selection: string, shouldLose: boolean): [number, number] {
-  const winning = shouldLose ? flip(selection) : selection;
-  if (winning === Selection.HOME) return [2, 1];
-  if (winning === Selection.AWAY) return [1, 2];
-  return [1, 1];
-}
-
-function flip(selection: string): string {
-  return selection === Selection.HOME ? Selection.AWAY : Selection.HOME;
+function profitFor(result: string, odds: number): number {
+  switch (result) {
+    case PickResult.WON:
+      return odds - 1;
+    case PickResult.HALF_WON:
+      return (odds - 1) / 2;
+    case PickResult.PUSH:
+    case PickResult.VOID:
+      return 0;
+    case PickResult.HALF_LOST:
+      return -0.5;
+    default:
+      return -1;
+  }
 }
 
 main()

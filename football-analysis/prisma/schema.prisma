@@ -19,6 +19,10 @@ model Team {
   logoUrl       String?
   apiFootballId String?  @unique
   sportsDbId    String?  @unique
+  // Current-season strength from football-data.org (null ⇒ market-only model for this team).
+  gfPerGame         Float?
+  gaPerGame         Float?
+  strengthUpdatedAt DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -48,9 +52,10 @@ model Fixture {
   homeTeam         Team              @relation("HomeTeam", fields: [homeTeamId], references: [id])
   awayTeam         Team              @relation("AwayTeam", fields: [awayTeamId], references: [id])
   oddsSnapshots    OddsSnapshot[]
+  marketQuotes     MarketQuote[]
   lineups          Lineup[]
   modelPredictions ModelPrediction[]
-  stepLegs         StepLeg[]
+  picks            Pick[]
 
   @@index([kickoffAt])
   @@index([league])
@@ -73,6 +78,24 @@ model OddsSnapshot {
   fixture Fixture @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
 
   @@index([fixtureId, capturedAt])
+}
+
+// Two-way market snapshot (Asian Handicap or Over/Under). h2h stays in OddsSnapshot above.
+// market: SPREAD | TOTAL. line = home handicap (SPREAD) or total goals line (TOTAL).
+model MarketQuote {
+  id              String   @id @default(cuid())
+  fixtureId       String
+  bookmaker       String
+  market          String
+  line            Float
+  homeOrOverOdds  Float
+  awayOrUnderOdds Float
+  isOpeningLine   Boolean  @default(false)
+  capturedAt      DateTime @default(now())
+
+  fixture Fixture @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
+
+  @@index([fixtureId, market, capturedAt])
 }
 
 model Lineup {
@@ -108,63 +131,51 @@ model NewsItem {
 }
 
 model ModelPrediction {
-  id              String   @id @default(cuid())
-  fixtureId       String
-  modelHomeProb   Float
-  modelDrawProb   Float
-  modelAwayProb   Float
-  edgeHome        Float
-  edgeDraw        Float
-  edgeAway        Float
-  confidenceScore Float
-  reasoning       String?
-  computedAt      DateTime @default(now())
+  id                String   @id @default(cuid())
+  fixtureId         String
+  modelHomeProb     Float
+  modelDrawProb     Float
+  modelAwayProb     Float
+  edgeHome          Float
+  edgeDraw          Float
+  edgeAway          Float
+  expectedGoalsHome Float?
+  expectedGoalsAway Float?
+  confidenceScore   Float
+  reasoning         String?
+  computedAt        DateTime @default(now())
 
   fixture Fixture @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
 
   @@index([fixtureId, computedAt])
 }
 
-// status: PENDING | SETTLED, resultOutcome: PENDING | WIN | LOSE | VOID (see lib/constants.ts)
-model Step {
-  id             String   @id @default(cuid())
-  date           DateTime @unique
-  status         String   @default("PENDING")
-  combinedOdds   Float
-  resultOutcome  String   @default("PENDING")
-  isFullStrength Boolean  @default(true)
-  createdAt      DateTime @default(now())
+// One recommended single value bet (not a parlay leg).
+// market: H2H | AH | OU ; side: HOME|DRAW|AWAY|OVER|UNDER (see lib/constants.ts)
+// result: PENDING | WON | HALF_WON | PUSH | HALF_LOST | LOST | VOID
+model Pick {
+  id              String    @id @default(cuid())
+  fixtureId       String
+  date            DateTime
+  market          String
+  side            String
+  line            Float?
+  odds            Float
+  bookmaker       String
+  modelProb       Float
+  fairProb        Float
+  edge            Float
+  confidence      Float
+  reasoning       String?
+  result          String    @default("PENDING")
+  profitLossUnits Float?
+  settledAt       DateTime?
+  createdAt       DateTime  @default(now())
 
-  legs   StepLeg[]
-  result StepResult?
-}
+  fixture Fixture @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
 
-// selection: HOME | DRAW | AWAY, legResult: PENDING | WON | LOST | VOID (see lib/constants.ts)
-model StepLeg {
-  id         String  @id @default(cuid())
-  stepId     String
-  fixtureId  String
-  selection  String
-  odds       Float
-  edge       Float
-  confidence Float
-  reasoning  String?
-  legResult  String  @default("PENDING")
-
-  step    Step    @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  fixture Fixture @relation(fields: [fixtureId], references: [id])
-
-  @@unique([stepId, fixtureId])
-}
-
-model StepResult {
-  id                String   @id @default(cuid())
-  stepId            String   @unique
-  settledAt         DateTime @default(now())
-  actualOutcomeJson String
-  profitLossUnits   Float
-
-  step Step @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  @@index([date])
+  @@index([fixtureId])
 }
 
 model PushSubscription {

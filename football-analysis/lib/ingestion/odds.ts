@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { TRACKED_LEAGUES } from "@/lib/constants";
+import { ODDS_API_MARKETS, TRACKED_LEAGUES } from "@/lib/constants";
 import { deVig } from "@/lib/analysis/devig";
 import { hoursFromNow, readMockJson, requireEnv, USE_MOCK_DATA } from "./util";
 
@@ -13,85 +13,110 @@ type MockOdds = {
   capturedAtOffsetHours: number;
 };
 
+type MockMarket = {
+  fixtureId: string;
+  bookmaker: string;
+  market: "SPREAD" | "TOTAL";
+  line: number;
+  homeOrOverOdds: number;
+  awayOrUnderOdds: number;
+  capturedAtOffsetHours: number;
+};
+
 /**
- * Pulls real bookmaker odds and stores a timestamped snapshot per bookmaker per fixture.
- * Real mode: The Odds API `/v4/sports/{sport}/odds` — ONE request per tracked league returns
- * odds for every upcoming match in that league, so 5 tracked leagues x 3 calls/day (morning,
- * afternoon, T-60min) is ~15 requests/day, comfortably inside the 500/month free quota.
+ * Pulls real bookmaker odds for three markets and stores timestamped snapshots:
+ *  - h2h (1X2) → OddsSnapshot
+ *  - spreads (Asian Handicap) + totals (Over/Under) → MarketQuote
+ * Real mode: The Odds API `/v4/sports/{sport}/odds?markets=h2h,spreads,totals&regions=eu`. One
+ * request returns every upcoming match in a league across all three markets; cost = markets ×
+ * regions = 3 credits per league. Ingest active leagues once/day to stay inside the 500/month tier.
  */
-export async function ingestOdds(): Promise<{ snapshots: number }> {
+export async function ingestOdds(): Promise<{ snapshots: number; quotes: number }> {
   if (USE_MOCK_DATA) return ingestOddsFromMock();
   return ingestOddsFromOddsApi();
 }
 
-async function ingestOddsFromMock(): Promise<{ snapshots: number }> {
+async function ingestOddsFromMock(): Promise<{ snapshots: number; quotes: number }> {
   const odds = await readMockJson<MockOdds[]>("odds.json");
-  let count = 0;
+  const markets = await readMockJson<MockMarket[]>("markets.json").catch(() => [] as MockMarket[]);
+  let snapshots = 0;
+  let quotes = 0;
 
-  for (const snapshot of odds) {
-    const fixtureExists = await prisma.fixture.findUnique({ where: { id: snapshot.fixtureId } });
-    if (!fixtureExists) continue;
-
-    const implied = deVig({ home: snapshot.homeOdds, draw: snapshot.drawOdds, away: snapshot.awayOdds });
-
+  for (const s of odds) {
+    if (!(await prisma.fixture.findUnique({ where: { id: s.fixtureId } }))) continue;
+    const implied = deVig({ home: s.homeOdds, draw: s.drawOdds, away: s.awayOdds });
     await prisma.oddsSnapshot.create({
       data: {
-        fixtureId: snapshot.fixtureId,
-        bookmaker: snapshot.bookmaker,
-        homeOdds: snapshot.homeOdds,
-        drawOdds: snapshot.drawOdds,
-        awayOdds: snapshot.awayOdds,
+        fixtureId: s.fixtureId,
+        bookmaker: s.bookmaker,
+        homeOdds: s.homeOdds,
+        drawOdds: s.drawOdds,
+        awayOdds: s.awayOdds,
         impliedHomeProb: implied.home,
         impliedDrawProb: implied.draw,
         impliedAwayProb: implied.away,
-        isOpeningLine: snapshot.isOpeningLine,
-        capturedAt: hoursFromNow(snapshot.capturedAtOffsetHours),
+        isOpeningLine: s.isOpeningLine,
+        capturedAt: hoursFromNow(s.capturedAtOffsetHours),
       },
     });
-    count += 1;
+    snapshots += 1;
   }
 
-  return { snapshots: count };
+  for (const m of markets) {
+    if (!(await prisma.fixture.findUnique({ where: { id: m.fixtureId } }))) continue;
+    await prisma.marketQuote.create({
+      data: {
+        fixtureId: m.fixtureId,
+        bookmaker: m.bookmaker,
+        market: m.market,
+        line: m.line,
+        homeOrOverOdds: m.homeOrOverOdds,
+        awayOrUnderOdds: m.awayOrUnderOdds,
+        capturedAt: hoursFromNow(m.capturedAtOffsetHours),
+      },
+    });
+    quotes += 1;
+  }
+
+  return { snapshots, quotes };
 }
 
 const INGEST_HORIZON_DAYS = 10;
 
-async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
+type OddsApiEvent = {
+  id: string;
+  commence_time: string;
+  home_team: string;
+  away_team: string;
+  bookmakers: Array<{
+    title: string;
+    markets: Array<{ key: string; outcomes: Array<{ name: string; price: number; point?: number }> }>;
+  }>;
+};
+
+async function ingestOddsFromOddsApi(): Promise<{ snapshots: number; quotes: number }> {
   const apiKey = requireEnv("ODDS_API_KEY");
   const horizon = new Date(Date.now() + INGEST_HORIZON_DAYS * 24 * 60 * 60 * 1000);
-  let count = 0;
+  const markets = ODDS_API_MARKETS.join(",");
+  let snapshots = 0;
+  let quotes = 0;
 
   for (const league of TRACKED_LEAGUES) {
-    const url = `https://api.the-odds-api.com/v4/sports/${league.oddsApiKey}/odds/?apiKey=${apiKey}&regions=eu&markets=h2h&oddsFormat=decimal`;
+    const url = `https://api.the-odds-api.com/v4/sports/${league.oddsApiKey}/odds/?apiKey=${apiKey}&regions=eu&markets=${markets}&oddsFormat=decimal`;
     const res = await fetch(url);
     if (!res.ok) {
       console.error(`The Odds API request failed for ${league.name}: ${res.status}`);
       continue;
     }
-    const events = (await res.json()) as Array<{
-      id: string;
-      commence_time: string;
-      home_team: string;
-      away_team: string;
-      bookmakers: Array<{
-        key: string;
-        title: string;
-        markets: Array<{ key: string; outcomes: Array<{ name: string; price: number }> }>;
-      }>;
-    }>;
+    const events = (await res.json()) as OddsApiEvent[];
 
     for (const event of events) {
-      if (new Date(event.commence_time) > horizon) continue; // keep only near-term matches
+      if (new Date(event.commence_time) > horizon) continue;
 
-      // The Odds API is the source of truth for fixture identity here — API-Football's free tier
-      // only covers historical seasons (2021-2024), so it can't supply current-season fixtures.
-      // Upsert by oddsApiId (the natural key for this source) and create the Team/Fixture rows
-      // directly from the odds event if this is the first time we've seen it.
       const [homeTeam, awayTeam] = await Promise.all([
         upsertTeamByName(event.home_team, league.name, league.country),
         upsertTeamByName(event.away_team, league.name, league.country),
       ]);
-
       const fixture = await prisma.fixture.upsert({
         where: { oddsApiId: event.id },
         update: {},
@@ -104,42 +129,74 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
         },
       });
 
-      // Only the very first snapshot this fixture has ever received counts as the opening line —
-      // NOT every bookmaker in this batch. (Bug fixed: this used to be computed once and reused
-      // for every bookmaker in the loop below, marking an entire batch as "opening".)
-      let isFixtureNew = (await prisma.oddsSnapshot.count({ where: { fixtureId: fixture.id } })) === 0;
+      // First-ever quote of each market kind for a fixture is the "opening line".
+      let firstH2H = (await prisma.oddsSnapshot.count({ where: { fixtureId: fixture.id } })) === 0;
+      let firstQuote = (await prisma.marketQuote.count({ where: { fixtureId: fixture.id } })) === 0;
 
-      for (const bookmaker of event.bookmakers) {
-        const market = bookmaker.markets.find((m) => m.key === "h2h");
-        if (!market) continue;
-        const home = market.outcomes.find((o) => o.name === event.home_team)?.price;
-        const away = market.outcomes.find((o) => o.name === event.away_team)?.price;
-        const draw = market.outcomes.find((o) => o.name === "Draw")?.price;
-        if (!home || !away) continue;
-
-        const implied = deVig({ home, draw, away });
-        const isOpeningLine = isFixtureNew;
-        isFixtureNew = false; // only the first bookmaker processed gets marked as the opening line
-
-        await prisma.oddsSnapshot.create({
-          data: {
-            fixtureId: fixture.id,
-            bookmaker: bookmaker.title,
-            homeOdds: home,
-            drawOdds: draw ?? null,
-            awayOdds: away,
-            impliedHomeProb: implied.home,
-            impliedDrawProb: implied.draw ?? null,
-            impliedAwayProb: implied.away,
-            isOpeningLine,
-          },
-        });
-        count += 1;
+      for (const bk of event.bookmakers) {
+        for (const market of bk.markets) {
+          if (market.key === "h2h") {
+            const home = market.outcomes.find((o) => o.name === event.home_team)?.price;
+            const away = market.outcomes.find((o) => o.name === event.away_team)?.price;
+            const draw = market.outcomes.find((o) => o.name === "Draw")?.price;
+            if (!home || !away) continue;
+            const implied = deVig({ home, draw, away });
+            await prisma.oddsSnapshot.create({
+              data: {
+                fixtureId: fixture.id,
+                bookmaker: bk.title,
+                homeOdds: home,
+                drawOdds: draw ?? null,
+                awayOdds: away,
+                impliedHomeProb: implied.home,
+                impliedDrawProb: implied.draw ?? null,
+                impliedAwayProb: implied.away,
+                isOpeningLine: firstH2H,
+              },
+            });
+            firstH2H = false;
+            snapshots += 1;
+          } else if (market.key === "spreads") {
+            const homeOutcome = market.outcomes.find((o) => o.name === event.home_team);
+            const awayOutcome = market.outcomes.find((o) => o.name === event.away_team);
+            if (!homeOutcome || !awayOutcome || homeOutcome.point == null) continue;
+            await prisma.marketQuote.create({
+              data: {
+                fixtureId: fixture.id,
+                bookmaker: bk.title,
+                market: "SPREAD",
+                line: homeOutcome.point, // home handicap
+                homeOrOverOdds: homeOutcome.price,
+                awayOrUnderOdds: awayOutcome.price,
+                isOpeningLine: firstQuote,
+              },
+            });
+            firstQuote = false;
+            quotes += 1;
+          } else if (market.key === "totals") {
+            const over = market.outcomes.find((o) => o.name === "Over");
+            const under = market.outcomes.find((o) => o.name === "Under");
+            if (!over || !under || over.point == null) continue;
+            await prisma.marketQuote.create({
+              data: {
+                fixtureId: fixture.id,
+                bookmaker: bk.title,
+                market: "TOTAL",
+                line: over.point,
+                homeOrOverOdds: over.price,
+                awayOrUnderOdds: under.price,
+                isOpeningLine: firstQuote,
+              },
+            });
+            firstQuote = false;
+            quotes += 1;
+          }
+        }
       }
     }
   }
 
-  return { snapshots: count };
+  return { snapshots, quotes };
 }
 
 /** Find-or-create a Team by name — The Odds API identifies teams by name only, no stable id. */
