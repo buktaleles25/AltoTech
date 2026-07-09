@@ -3,6 +3,7 @@ import { betLabel } from "@/lib/format";
 import {
   DEFAULT_TOTAL_GOALS,
   DIXON_COLES_RHO,
+  MAX_PICK_ODDS,
   MAX_PICKS_PER_FIXTURE,
   MIN_PICK_CONFIDENCE,
   MODEL_SUPREMACY_WEIGHT,
@@ -68,7 +69,10 @@ export async function analyzeFixture(fixtureId: string): Promise<FixtureAnalysis
 
   const candidates = findValueBets(model, quotes, dataCompleteness);
   const qualifying = candidates
-    .filter((c) => c.ev >= VALUE_EDGE_THRESHOLD && c.confidence >= MIN_PICK_CONFIDENCE)
+    .filter((c) => c.ev >= VALUE_EDGE_THRESHOLD && c.confidence >= MIN_PICK_CONFIDENCE && c.bestOdds <= MAX_PICK_ODDS)
+    // Rank by EV × confidence so tight, high-confidence lines (Asian Handicap, totals) win over
+    // high-variance longshots that merely have a big raw EV from one soft book.
+    .sort((a, b) => b.ev * b.confidence - a.ev * a.confidence)
     .slice(0, MAX_PICKS_PER_FIXTURE);
 
   const kickoffDay = new Date(fixture.kickoffAt);

@@ -85,8 +85,16 @@ export const VALUE_EDGE_THRESHOLD = 0.02;
 /** Minimum confidence (0-100) for a Pick to be surfaced on the daily board. */
 export const MIN_PICK_CONFIDENCE = 45;
 
-/** Max recommended bets stored per fixture (the best few by EV); the daily board ranks across all. */
+/** Max recommended bets stored per fixture (the best few by EV×confidence). */
 export const MAX_PICKS_PER_FIXTURE = 2;
+
+/**
+ * Longshot odds cap for recommendations. A high "EV" on a 5.00+ underdog is almost always just
+ * one soft book pricing a longshot generously — the noisiest, highest-variance kind of value.
+ * Capping keeps recommendations on the tighter, more reliable lines (Asian Handicap, totals,
+ * short-priced 1X2), which is also the market punters actually use.
+ */
+export const MAX_PICK_ODDS = 4.5;
 
 /** Dixon-Coles low-score correction strength. */
 export const DIXON_COLES_RHO = -0.08;
