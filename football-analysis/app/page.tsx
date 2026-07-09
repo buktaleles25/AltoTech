@@ -8,24 +8,30 @@ import { formatMatchDate } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export default async function TodayPage() {
-  const dayStart = new Date();
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const windowEnd = new Date(now);
+  windowEnd.setHours(0, 0, 0, 0);
+  windowEnd.setDate(windowEnd.getDate() + 3); // upcoming value bets over the next few days
 
   const picks = await prisma.pick.findMany({
-    where: { date: { gte: dayStart, lt: dayEnd } },
+    where: { result: "PENDING", fixture: { kickoffAt: { gte: now } }, date: { lt: windowEnd } },
     include: { fixture: { include: { homeTeam: true, awayTeam: true } } },
   });
-  picks.sort((a, b) => b.edge * b.confidence - a.edge * a.confidence);
+  // Soonest kickoff first, then best value within a day.
+  picks.sort((a, b) => {
+    const dt = new Date(a.fixture.kickoffAt).getTime() - new Date(b.fixture.kickoffAt).getTime();
+    if (Math.abs(dt) > 60 * 60 * 1000) return dt;
+    return b.edge * b.confidence - a.edge * a.confidence;
+  });
 
   return (
     <div className="flex flex-1 flex-col px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
       <header className="mb-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-accent">บิลเด็ดวันนี้</p>
-        <h1 className="text-2xl font-bold text-text-primary">{formatMatchDate(dayStart)}</h1>
+        <p className="text-xs font-medium uppercase tracking-wide text-accent">บิลเด็ด</p>
+        <h1 className="text-2xl font-bold text-text-primary">{formatMatchDate(now)}</h1>
         <p className="mt-1 text-sm text-text-secondary">
-          คู่ที่ระบบเจอ &ldquo;value&rdquo; จากราคาน้ำจริง — บอกเลยว่าเล่นตลาดไหน เส้นไหน ที่ราคาน้ำเท่าไหร่ และเจ้าไหนให้ราคาดีสุด
-          แต่ละบิลเล่นแยกกันได้ (ไม่ต้องมัดเป็นสเต็ป)
+          คู่ที่ระบบเจอ &ldquo;value&rdquo; จากราคาน้ำจริง (ที่กำลังจะเตะเร็ว ๆ นี้) — บอกเลยว่าเล่นตลาดไหน เส้นไหน
+          ที่ราคาน้ำเท่าไหร่ และเจ้าไหนให้ราคาดีสุด แต่ละบิลเล่นแยกกันได้
         </p>
       </header>
 

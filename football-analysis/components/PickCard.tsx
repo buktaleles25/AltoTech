@@ -1,6 +1,6 @@
 import Link from "next/link";
 import ConfidenceBadge from "./ConfidenceBadge";
-import { betLabel, formatEdge, formatKickoff, formatOdds, marketTag } from "@/lib/format";
+import { betLabel, formatEdge, formatKickoff, formatMatchDate, formatOdds, marketTag } from "@/lib/format";
 
 export type PickCardData = {
   id: string;
@@ -36,7 +36,7 @@ export default function PickCard({ pick }: { pick: PickCardData }) {
           <span className="rounded bg-surface-2 px-1.5 py-0.5 font-medium text-text-secondary">{marketTag(pick.market)}</span>
           {pick.fixture.league}
         </span>
-        <span>{formatKickoff(pick.fixture.kickoffAt)}</span>
+        <span>{formatMatchDate(pick.fixture.kickoffAt)} · {formatKickoff(pick.fixture.kickoffAt)}</span>
       </div>
 
       <p className="mt-2 truncate text-xs text-text-secondary">
