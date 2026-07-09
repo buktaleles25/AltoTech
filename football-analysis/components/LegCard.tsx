@@ -2,7 +2,6 @@ import Link from "next/link";
 import TeamBadge from "./TeamBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import { formatEdge, formatKickoff, formatOdds, selectionLabel } from "@/lib/format";
-import { LOW_CONFIDENCE_FILL_MARKER } from "@/lib/constants";
 
 export type LegCardData = {
   id: string;
@@ -21,8 +20,6 @@ export type LegCardData = {
 };
 
 export default function LegCard({ leg, index }: { leg: LegCardData; index?: number }) {
-  const isLowConfidenceFill = leg.reasoning?.includes(LOW_CONFIDENCE_FILL_MARKER) ?? false;
-
   return (
     <Link
       href={`/fixtures/${leg.fixture.id}`}
@@ -58,12 +55,7 @@ export default function LegCard({ leg, index }: { leg: LegCardData; index?: numb
         </span>
       </div>
 
-      {leg.reasoning && (
-        <p className="mt-2 text-[11px] leading-relaxed text-text-secondary">
-          {isLowConfidenceFill && <span className="font-medium text-warning">⚠ ตัวเลือกสำรอง (ยังไม่ถึงเกณฑ์คุณค่า) · </span>}
-          {leg.reasoning.replace(` ${LOW_CONFIDENCE_FILL_MARKER}`, "")}
-        </p>
-      )}
+      {leg.reasoning && <p className="mt-2 text-[11px] leading-relaxed text-text-secondary">{leg.reasoning}</p>}
     </Link>
   );
 }

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { selectStepLegs, type Candidate } from "./stepBuilder";
-import { LOW_CONFIDENCE_FILL_MARKER } from "@/lib/constants";
 
 function candidate(overrides: Partial<Candidate>): Candidate {
   return {
@@ -28,29 +27,42 @@ describe("selectStepLegs", () => {
     expect(chosen.map((c) => c.fixtureId)).toEqual(["fx-7", "fx-6", "fx-5", "fx-4", "fx-3"]);
   });
 
-  it("fills remaining slots with the best non-qualifying candidates when fewer than 5 qualify", () => {
+  it("never includes a non-qualifying candidate, even to reach 5 legs", () => {
     const candidates = [
       candidate({ fixtureId: "fx-a", edge: 0.06, confidence: 80, qualifies: true }),
       candidate({ fixtureId: "fx-b", edge: 0.055, confidence: 75, qualifies: true }),
-      candidate({ fixtureId: "fx-c", edge: 0.02, confidence: 40, qualifies: false }),
-      candidate({ fixtureId: "fx-d", edge: 0.01, confidence: 30, qualifies: false }),
+      candidate({ fixtureId: "fx-c", edge: 0.045, confidence: 70, qualifies: true }),
+      candidate({ fixtureId: "fx-d", edge: 0.02, confidence: 40, qualifies: false }),
+      candidate({ fixtureId: "fx-e", edge: 0.01, confidence: 30, qualifies: false }),
     ];
     const { chosen, isFullStrength } = selectStepLegs(candidates);
 
-    expect(chosen).toHaveLength(4); // only 4 candidates exist total
+    expect(chosen).toHaveLength(3); // only 3 candidates actually qualify
     expect(isFullStrength).toBe(false);
-    const fillIns = chosen.filter((c) => !c.qualifies);
-    expect(fillIns).toHaveLength(2);
-    for (const fillIn of fillIns) {
-      expect(fillIn.reasoning).toContain(LOW_CONFIDENCE_FILL_MARKER);
-    }
-    // Qualifying legs are untouched.
-    for (const leg of chosen.filter((c) => c.qualifies)) {
-      expect(leg.reasoning).not.toContain(LOW_CONFIDENCE_FILL_MARKER);
-    }
+    expect(chosen.every((c) => c.qualifies)).toBe(true);
+    expect(chosen.map((c) => c.fixtureId).sort()).toEqual(["fx-a", "fx-b", "fx-c"]);
   });
 
-  it("is full strength only when at least 5 candidates qualify", () => {
+  it("publishes nothing when fewer than MIN_STEP_LEGS (3) candidates qualify", () => {
+    const twoQualifying = [
+      candidate({ fixtureId: "fx-1", qualifies: true }),
+      candidate({ fixtureId: "fx-2", qualifies: true }),
+      candidate({ fixtureId: "fx-3", qualifies: false }),
+    ];
+    const { chosen, isFullStrength, combinedOdds } = selectStepLegs(twoQualifying);
+    expect(chosen).toHaveLength(0);
+    expect(isFullStrength).toBe(false);
+    expect(combinedOdds).toBe(1);
+  });
+
+  it("publishes with exactly 3 qualifying legs (the floor)", () => {
+    const threeQualifying = Array.from({ length: 3 }, (_, i) => candidate({ fixtureId: `fx-${i}`, qualifies: true }));
+    const { chosen, isFullStrength } = selectStepLegs(threeQualifying);
+    expect(chosen).toHaveLength(3);
+    expect(isFullStrength).toBe(false); // full strength requires all 5
+  });
+
+  it("is full strength only when exactly 5 (or capped at 5 from more) candidates qualify", () => {
     const fourQualifying = Array.from({ length: 4 }, (_, i) => candidate({ fixtureId: `fx-${i}`, qualifies: true }));
     expect(selectStepLegs(fourQualifying).isFullStrength).toBe(false);
 
@@ -58,7 +70,9 @@ describe("selectStepLegs", () => {
     expect(selectStepLegs(fiveQualifying).isFullStrength).toBe(true);
 
     const sixQualifying = Array.from({ length: 6 }, (_, i) => candidate({ fixtureId: `fx-${i}`, qualifies: true }));
-    expect(selectStepLegs(sixQualifying).isFullStrength).toBe(true);
+    const result = selectStepLegs(sixQualifying);
+    expect(result.isFullStrength).toBe(true);
+    expect(result.chosen).toHaveLength(5); // capped at 5 even with 6 qualifying
   });
 
   it("computes combined odds as the product of the chosen legs' odds", () => {
@@ -81,12 +95,13 @@ describe("selectStepLegs", () => {
   it("documents that one-leg-per-fixture is the caller's responsibility, not selectStepLegs'", () => {
     // buildDailyStep only ever constructs one candidate per fixture (the single best outcome),
     // so this never happens in practice — but selectStepLegs itself has no dedupe logic, so two
-    // candidates sharing a fixtureId would both be selectable here.
+    // qualifying candidates sharing a fixtureId would both be selectable here.
     const candidates = [
       candidate({ fixtureId: "fx-1", selection: "HOME", edge: 0.08, qualifies: true }),
-      candidate({ fixtureId: "fx-1", selection: "AWAY", edge: 0.03, qualifies: true }),
+      candidate({ fixtureId: "fx-1", selection: "AWAY", edge: 0.07, qualifies: true }),
+      candidate({ fixtureId: "fx-2", edge: 0.06, qualifies: true }),
     ];
     const { chosen } = selectStepLegs(candidates);
-    expect(chosen).toHaveLength(2);
+    expect(chosen).toHaveLength(3);
   });
 });

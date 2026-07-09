@@ -28,8 +28,8 @@ export default async function TodayPage() {
         <p className="text-xs font-medium uppercase tracking-wide text-accent">Step 5 วันนี้</p>
         <h1 className="text-2xl font-bold text-text-primary">{formatMatchDate(dayStart)}</h1>
         <p className="mt-1 text-sm text-text-secondary">
-          5 คู่ที่ระบบวิเคราะห์แล้วว่าราคาน้ำให้ &ldquo;คุณค่า&rdquo; สูงสุดตอนนี้ (คู่ที่ยังไม่เตะ ภายในไม่กี่วันข้างหน้า) —
-          เทียบจากราคาน้ำจริง ไม่ใช่แค่ทายผลแพ้ชนะ
+          คู่ที่เตะวันนี้และระบบวิเคราะห์แล้วว่าราคาน้ำให้ &ldquo;คุณค่า&rdquo; สูงสุด — เทียบจากราคาน้ำจริง ไม่ใช่แค่ทายผลแพ้ชนะ
+          ทุกขาเตะวันเดียวกัน จบพร้อมกัน
         </p>
       </header>
 
@@ -45,7 +45,7 @@ export default async function TodayPage() {
               </div>
               {!step.isFullStrength && (
                 <span className="rounded-full bg-warning-soft px-3 py-1 text-[11px] font-medium text-warning ring-1 ring-warning/40">
-                  วันนี้คู่ที่ผ่านเกณฑ์ไม่ครบ 5 — มีตัวเลือกสำรอง
+                  วันนี้มีคู่ที่ผ่านเกณฑ์แค่ {step.legs.length} คู่
                 </span>
               )}
             </div>
@@ -68,10 +68,10 @@ export default async function TodayPage() {
 function EmptyState() {
   return (
     <div className="mt-8 rounded-2xl border border-dashed border-border-subtle p-6 text-center">
-      <p className="text-sm text-text-secondary">ยังไม่มี Step 5 ตอนนี้</p>
+      <p className="text-sm text-text-secondary">ยังไม่มี Step สำหรับวันนี้</p>
       <p className="mt-1 text-xs text-text-muted">
-        อาจเป็นเพราะยังไม่มีการวิเคราะห์รอบล่าสุด หรือช่วงนี้ลีกที่ติดตามอยู่ไม่มีแมตช์ในไม่กี่วันข้างหน้า
-        (เช่นเป็นช่วงพักฤดูกาล) ระบบจะสร้างสเต็ปใหม่ทันทีที่มีคู่แข่งขันและราคาน้ำเข้ามา
+        วันนี้อาจมีคู่ที่ผ่านเกณฑ์คุณค่าไม่ถึง 3 คู่ (ต้องมีอย่างน้อย 3 คู่ระบบถึงจะส่ง Step) หรือยังไม่มีการวิเคราะห์รอบล่าสุด
+        — ระบบไม่ปั้นคู่ที่ยังไม่ผ่านเกณฑ์มาเติมให้ครบ
       </p>
     </div>
   );

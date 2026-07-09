@@ -77,17 +77,20 @@ export const MIN_STEP_CONFIDENCE = 50;
 /** Odds-implied-probability shift (absolute) between opening and current line that counts as a "steam move". */
 export const STEAM_MOVE_THRESHOLD = 0.03;
 
+/** Target legs for a full-strength Step. */
 export const LEGS_PER_STEP = 5;
 
 /**
- * How far ahead the daily Step 5 looks for candidate matches. Match density varies a lot day to
- * day (a busy Champions League Tuesday vs. a quiet Monday with almost nothing on) and can go
- * fully quiet for days between tracked leagues' matchdays — a strict "only today's kickoffs"
- * window would leave the Step empty on those days, breaking the every-day delivery promise. A
- * rolling near-term window keeps a real Step 5 flowing daily while still only ever surfacing
- * matches that haven't kicked off yet.
+ * The Step only ever draws from a single calendar day's matches, so every leg settles together —
+ * mixing kickoff days into one accumulator was confusing. If fewer than this many matches clear
+ * the value/confidence bar on a given day, no Step is published that day rather than padding it
+ * out with picks that don't actually clear the bar.
+ */
+export const MIN_STEP_LEGS = 3;
+
+/**
+ * How far ahead `/api/analyze/run` re-analyzes fixtures (separate from the Step's same-day
+ * window above) — this just keeps the Fixtures browse list populated with fresh predictions for
+ * the next few days, it doesn't widen what the Step itself draws from.
  */
 export const STEP_LOOKAHEAD_DAYS = 3;
-
-/** Appended to a StepLeg's reasoning text when it's a fallback fill that didn't clear the value/confidence bar. */
-export const LOW_CONFIDENCE_FILL_MARKER = "[[low-confidence-fill]]";
