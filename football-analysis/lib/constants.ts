@@ -68,7 +68,12 @@ export const TRACKED_LEAGUES = [
   { oddsApiKey: "soccer_italy_serie_a", footballDataCode: "SA", name: "Serie A", country: "Italy", defaultTotalGoals: 2.7 },
   { oddsApiKey: "soccer_germany_bundesliga", footballDataCode: "BL1", name: "Bundesliga", country: "Germany", defaultTotalGoals: 3.1 },
   { oddsApiKey: "soccer_uefa_champs_league", footballDataCode: "CL", name: "Champions League", country: "Europe", defaultTotalGoals: 2.8 },
+  { oddsApiKey: "soccer_france_ligue_one", footballDataCode: "FL1", name: "Ligue 1", country: "France", defaultTotalGoals: 2.6 },
+  { oddsApiKey: "soccer_netherlands_eredivisie", footballDataCode: "DED", name: "Eredivisie", country: "Netherlands", defaultTotalGoals: 3.2 },
+  { oddsApiKey: "soccer_portugal_primeira_liga", footballDataCode: "PPL", name: "Primeira Liga", country: "Portugal", defaultTotalGoals: 2.5 },
+  { oddsApiKey: "soccer_efl_champ", footballDataCode: "ELC", name: "Championship", country: "England", defaultTotalGoals: 2.5 },
   { oddsApiKey: "soccer_brazil_campeonato", footballDataCode: "BSA", name: "Brasileirão Série A", country: "Brazil", defaultTotalGoals: 2.4 },
+  { oddsApiKey: "soccer_conmebol_copa_libertadores", footballDataCode: "CLI", name: "Copa Libertadores", country: "South America", defaultTotalGoals: 2.4 },
   // Summer-active leagues NOT on football-data.org free tier → market-only model:
   { oddsApiKey: "soccer_usa_mls", footballDataCode: undefined, name: "MLS", country: "USA", defaultTotalGoals: 3.0 },
   { oddsApiKey: "soccer_korea_kleague1", footballDataCode: undefined, name: "K League 1", country: "South Korea", defaultTotalGoals: 2.5 },
@@ -93,7 +98,7 @@ export const MIN_PICK_CONFIDENCE = 45;
 export const TWO_WAY_MARKET_PREFERENCE = 1.25;
 
 /** Max recommended bets stored per fixture (the best few by EV×confidence). */
-export const MAX_PICKS_PER_FIXTURE = 2;
+export const MAX_PICKS_PER_FIXTURE = 3;
 
 /**
  * Longshot odds cap for recommendations. A high "EV" on a 5.00+ underdog is almost always just

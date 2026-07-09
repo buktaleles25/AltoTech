@@ -23,7 +23,7 @@ export type PickCardData = {
   };
 };
 
-export default function PickCard({ pick }: { pick: PickCardData }) {
+export default function PickCard({ pick, extraCount = 0 }: { pick: PickCardData; extraCount?: number }) {
   const label = betLabel(pick.market, pick.side, pick.line, pick.fixture.homeTeam.name, pick.fixture.awayTeam.name);
 
   return (
@@ -58,9 +58,16 @@ export default function PickCard({ pick }: { pick: PickCardData }) {
 
       <div className="mt-3 flex items-center justify-between gap-2">
         <ConfidenceBadge confidence={pick.confidence} />
-        <span className={`font-mono text-xs font-medium ${pick.edge >= 0 ? "text-accent" : "text-danger"}`}>
-          EV {formatEdge(pick.edge)}
-        </span>
+        <div className="flex items-center gap-2">
+          {extraCount > 0 && (
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-text-secondary">
+              +{extraCount} ตัวเลือกอื่น
+            </span>
+          )}
+          <span className={`font-mono text-xs font-medium ${pick.edge >= 0 ? "text-accent" : "text-danger"}`}>
+            EV {formatEdge(pick.edge)}
+          </span>
+        </div>
       </div>
     </Link>
   );

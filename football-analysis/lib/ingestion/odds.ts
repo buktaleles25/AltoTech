@@ -102,6 +102,12 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number; quotes: num
   let quotes = 0;
 
   for (const league of TRACKED_LEAGUES) {
+    // Quota gate: the `/events` endpoint is FREE (returns commence_time without spending credits),
+    // so we peek first and only pay the 3-credit `/odds` call for leagues that actually have a
+    // match inside the horizon. Off-season leagues (no near-term fixture) cost 0 — this is what
+    // lets us track more leagues safely without burning through the 500/month tier.
+    if (!(await hasUpcomingEvent(league.oddsApiKey, apiKey, horizon))) continue;
+
     const url = `https://api.the-odds-api.com/v4/sports/${league.oddsApiKey}/odds/?apiKey=${apiKey}&regions=eu&markets=${markets}&oddsFormat=decimal`;
     const res = await fetch(url);
     if (!res.ok) {
@@ -197,6 +203,35 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number; quotes: num
   }
 
   return { snapshots, quotes };
+}
+
+type OddsApiEventStub = { commence_time: string };
+
+/**
+ * Free pre-check: does this league have a match within the horizon? The `/events` endpoint does
+ * NOT count against the odds quota (x-requests-last: 0), so we can safely poll every tracked
+ * league — including off-season ones — and only spend credits on `/odds` where there's actually
+ * something to price. On any error we return true (fail open) so a flaky `/events` call never
+ * silently starves a live league of odds.
+ */
+async function hasUpcomingEvent(sportKey: string, apiKey: string, horizon: Date): Promise<boolean> {
+  const url = `https://api.the-odds-api.com/v4/sports/${sportKey}/events/?apiKey=${apiKey}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error(`The Odds API /events check failed for ${sportKey}: ${res.status}`);
+      return true;
+    }
+    const events = (await res.json()) as OddsApiEventStub[];
+    const now = Date.now();
+    return events.some((e) => {
+      const t = new Date(e.commence_time).getTime();
+      return t >= now && t <= horizon.getTime();
+    });
+  } catch (err) {
+    console.error(`The Odds API /events check errored for ${sportKey}:`, err);
+    return true;
+  }
 }
 
 /** Find-or-create a Team by name — The Odds API identifies teams by name only, no stable id. */
