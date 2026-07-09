@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { readMockJson, requireEnv, USE_MOCK_DATA } from "./util";
+import { apiFootballFetch, readMockJson, USE_MOCK_DATA } from "./util";
 
 type MockLineup = {
   fixtureId: string;
@@ -53,7 +53,6 @@ async function ingestLineupsFromMock(): Promise<{ upserts: number }> {
 }
 
 async function ingestLineupsFromApiFootball(): Promise<{ upserts: number }> {
-  const apiKey = requireEnv("RAPIDAPI_KEY");
   const now = new Date();
   const soon = new Date(now.getTime() + 75 * 60 * 1000);
 
@@ -65,10 +64,7 @@ async function ingestLineupsFromApiFootball(): Promise<{ upserts: number }> {
   let count = 0;
   for (const fixture of fixtures) {
     if (!fixture.apiFootballId) continue;
-    const url = `https://api-football-v1.p.rapidapi.com/v3/fixtures/lineups?fixture=${fixture.apiFootballId}`;
-    const res = await fetch(url, {
-      headers: { "x-rapidapi-key": apiKey, "x-rapidapi-host": "api-football-v1.p.rapidapi.com" },
-    });
+    const res = await apiFootballFetch(`/fixtures/lineups?fixture=${fixture.apiFootballId}`);
     if (!res.ok) continue;
 
     const body = (await res.json()) as {

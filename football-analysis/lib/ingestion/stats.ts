@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { TRACKED_LEAGUES } from "@/lib/constants";
 import type { HeadToHead, TeamForm } from "@/lib/analysis/model";
-import { readMockJson, requireEnv, USE_MOCK_DATA } from "./util";
+import { apiFootballFetch, readMockJson, USE_MOCK_DATA } from "./util";
 
 type MockForm = Record<string, TeamForm>;
 type MockH2H = Array<{ teamAId: string; teamBId: string; teamAWins: number; teamBWins: number; draws: number; sampleSize: number }>;
@@ -29,12 +29,8 @@ async function getTeamFormFromApiFootball(teamId: string): Promise<TeamForm> {
   const league = TRACKED_LEAGUES.find((l) => l.name === team.league);
   if (!league) return FALLBACK_FORM;
 
-  const apiKey = requireEnv("RAPIDAPI_KEY");
   const season = new Date().getFullYear();
-  const url = `https://api-football-v1.p.rapidapi.com/v3/teams/statistics?team=${team.apiFootballId}&season=${season}&league=${league.apiFootballLeagueId}`;
-  const res = await fetch(url, {
-    headers: { "x-rapidapi-key": apiKey, "x-rapidapi-host": "api-football-v1.p.rapidapi.com" },
-  });
+  const res = await apiFootballFetch(`/teams/statistics?team=${team.apiFootballId}&season=${season}&league=${league.apiFootballLeagueId}`);
   if (!res.ok) return FALLBACK_FORM;
 
   const body = (await res.json()) as {
@@ -100,11 +96,7 @@ async function getHeadToHeadFromApiFootball(teamAId: string, teamBId: string): P
   ]);
   if (!teamA?.apiFootballId || !teamB?.apiFootballId) return null;
 
-  const apiKey = requireEnv("RAPIDAPI_KEY");
-  const url = `https://api-football-v1.p.rapidapi.com/v3/fixtures/headtohead?h2h=${teamA.apiFootballId}-${teamB.apiFootballId}&last=5`;
-  const res = await fetch(url, {
-    headers: { "x-rapidapi-key": apiKey, "x-rapidapi-host": "api-football-v1.p.rapidapi.com" },
-  });
+  const res = await apiFootballFetch(`/fixtures/headtohead?h2h=${teamA.apiFootballId}-${teamB.apiFootballId}&last=5`);
   if (!res.ok) return null;
 
   const body = (await res.json()) as {

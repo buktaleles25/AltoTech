@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { FixtureStatus, TRACKED_LEAGUES } from "@/lib/constants";
-import { hoursFromNow, readMockJson, requireEnv, USE_MOCK_DATA } from "./util";
+import { apiFootballFetch, hoursFromNow, readMockJson, USE_MOCK_DATA } from "./util";
 
 type MockTeam = {
   id: string;
@@ -66,7 +66,6 @@ async function ingestFixturesFromMock(): Promise<{ teams: number; fixtures: numb
 }
 
 async function ingestFixturesFromApiFootball(): Promise<{ teams: number; fixtures: number }> {
-  const apiKey = requireEnv("RAPIDAPI_KEY");
   const season = new Date().getFullYear();
   const date = new Date().toISOString().slice(0, 10);
 
@@ -74,13 +73,7 @@ async function ingestFixturesFromApiFootball(): Promise<{ teams: number; fixture
   let fixtureCount = 0;
 
   for (const league of TRACKED_LEAGUES) {
-    const url = `https://api-football-v1.p.rapidapi.com/v3/fixtures?date=${date}&league=${league.apiFootballLeagueId}&season=${season}`;
-    const res = await fetch(url, {
-      headers: {
-        "x-rapidapi-key": apiKey,
-        "x-rapidapi-host": "api-football-v1.p.rapidapi.com",
-      },
-    });
+    const res = await apiFootballFetch(`/fixtures?date=${date}&league=${league.apiFootballLeagueId}&season=${season}`);
     if (!res.ok) {
       console.error(`API-Football fixtures request failed for ${league.name}: ${res.status}`);
       continue;

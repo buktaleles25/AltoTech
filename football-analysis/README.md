@@ -61,7 +61,12 @@ Set `USE_MOCK_DATA=false` in `.env` and fill in:
 | Env var | Where to get it | Free tier |
 |---|---|---|
 | `ODDS_API_KEY` | [the-odds-api.com](https://the-odds-api.com) — real bookmaker odds | 500 requests/month |
-| `RAPIDAPI_KEY` | [API-Football on RapidAPI](https://rapidapi.com/api-sports/api/api-football) — fixtures, lineups, injuries, team stats | 100 requests/day |
+| `APIFOOTBALL_KEY` | [dashboard.api-football.com/register](https://dashboard.api-football.com/register) — fixtures, lineups, injuries, team stats | 100 requests/day |
+
+`APIFOOTBALL_KEY` (direct api-sports.io signup) and `RAPIDAPI_KEY` ([API-Football on
+RapidAPI](https://rapidapi.com/api-sports/api/api-football)) are two auth paths to the same
+data — `lib/ingestion/util.ts#apiFootballFetch` picks whichever is set (direct key preferred).
+Use whichever signup flow actually works for you.
 
 News ingestion (`lib/ingestion/news.ts`) uses free RSS feeds (BBC Sport, ESPN FC, Sky
 Sports) — no key required. The ingestion cadence in `worker/scheduler.ts` is deliberately
@@ -92,6 +97,7 @@ app/
     steps/{today,history}/route.ts                  public read endpoints
     fixtures/{upcoming,[id]}/route.ts                public read endpoints
     push/{subscribe,broadcast-step}/route.ts         Web Push subscription + daily send
+    admin/reset/route.ts                             cron-secret-protected: wipes all matchday data
 
 lib/
   ingestion/        one file per free data source, each with a USE_MOCK_DATA branch
