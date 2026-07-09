@@ -10,7 +10,7 @@ import { FixtureStatus } from "@/lib/constants";
  * Full daily pipeline: re-analyze every scheduled fixture with odds data, rebuild today's
  * Step 5 from the fresh predictions, and settle any pending Steps whose fixtures have finished.
  */
-export async function POST(request: NextRequest) {
+async function handler(request: NextRequest) {
   const unauthorized = requireCronSecret(request);
   if (unauthorized) return unauthorized;
 
@@ -33,3 +33,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ ok: true, analyzed, step, settlement });
 }
+
+// POST: called by worker/scheduler.ts and manual curl. GET: Vercel Cron always calls via GET.
+export const POST = handler;
+export const GET = handler;

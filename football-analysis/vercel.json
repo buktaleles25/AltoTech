@@ -1,0 +1,7 @@
+{
+  "buildCommand": "prisma generate --schema=prisma/schema.postgres.prisma && prisma db push --schema=prisma/schema.postgres.prisma --accept-data-loss --skip-generate && tsx prisma/seed.ts && next build",
+  "crons": [
+    { "path": "/api/ingest/fixtures", "schedule": "0 6 * * *" },
+    { "path": "/api/analyze/run", "schedule": "0 7 * * *" }
+  ]
+}
