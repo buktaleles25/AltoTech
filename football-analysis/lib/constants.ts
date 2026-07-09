@@ -52,6 +52,9 @@ export type LegResult = (typeof LegResult)[keyof typeof LegResult];
  * real matches to analyze year-round instead of going quiet for three months.
  */
 export const TRACKED_LEAGUES = [
+  // FIFA World Cup 2026 (Jun 11 - Jul 19) — check this FIRST, it outranks every league in
+  // relevance whenever it's actually running.
+  { oddsApiKey: "soccer_fifa_world_cup", apiFootballLeagueId: 1, name: "FIFA World Cup", country: "World" },
   { oddsApiKey: "soccer_epl", apiFootballLeagueId: 39, name: "Premier League", country: "England" },
   { oddsApiKey: "soccer_spain_la_liga", apiFootballLeagueId: 140, name: "La Liga", country: "Spain" },
   { oddsApiKey: "soccer_italy_serie_a", apiFootballLeagueId: 135, name: "Serie A", country: "Italy" },
