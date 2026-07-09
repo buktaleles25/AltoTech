@@ -104,8 +104,10 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
         },
       });
 
-      const isFirstSnapshotForFixture =
-        (await prisma.oddsSnapshot.count({ where: { fixtureId: fixture.id } })) === 0;
+      // Only the very first snapshot this fixture has ever received counts as the opening line —
+      // NOT every bookmaker in this batch. (Bug fixed: this used to be computed once and reused
+      // for every bookmaker in the loop below, marking an entire batch as "opening".)
+      let isFixtureNew = (await prisma.oddsSnapshot.count({ where: { fixtureId: fixture.id } })) === 0;
 
       for (const bookmaker of event.bookmakers) {
         const market = bookmaker.markets.find((m) => m.key === "h2h");
@@ -116,6 +118,8 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
         if (!home || !away) continue;
 
         const implied = deVig({ home, draw, away });
+        const isOpeningLine = isFixtureNew;
+        isFixtureNew = false; // only the first bookmaker processed gets marked as the opening line
 
         await prisma.oddsSnapshot.create({
           data: {
@@ -127,7 +131,7 @@ async function ingestOddsFromOddsApi(): Promise<{ snapshots: number }> {
             impliedHomeProb: implied.home,
             impliedDrawProb: implied.draw ?? null,
             impliedAwayProb: implied.away,
-            isOpeningLine: isFirstSnapshotForFixture,
+            isOpeningLine,
           },
         });
         count += 1;
