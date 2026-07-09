@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+
+  --background: #0b0f14;
+  --surface: #121821;
+  --surface-2: #1a232d;
+  --border-subtle: #232e3a;
+
+  --text-primary: #f2f5f8;
+  --text-secondary: #9aabb8;
+  --text-muted: #64778a;
+
+  --accent: #22c55e;
+  --accent-strong: #16a34a;
+  --accent-soft: #16a34a26;
+
+  --warning: #f59e0b;
+  --warning-soft: #f59e0b22;
+
+  --danger: #f43f5e;
+  --danger-soft: #f43f5e22;
+
+  --info: #38bdf8;
+}
+
+@theme inline {
+  --font-sans: var(--font-sans-thai);
+  --font-mono: var(--font-geist-mono);
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-info: var(--info);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+/* Hide scrollbars on the horizontally-scrolling league/day chip rows while keeping them scrollable. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

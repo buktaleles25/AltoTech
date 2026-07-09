@@ -1,0 +1,93 @@
+[
+  {
+    "fixtureId": "fx-today-1", "teamId": "arsenal", "isConfirmed": true, "formation": "4-3-3",
+    "startingXi": ["Raya", "White", "Saliba", "Gabriel", "Timber", "Rice", "Odegaard", "Merino", "Saka", "Havertz", "Martinelli"],
+    "missingPlayers": []
+  },
+  {
+    "fixtureId": "fx-today-1", "teamId": "chelsea", "isConfirmed": true, "formation": "4-2-3-1",
+    "startingXi": ["Sanchez", "James", "Colwill", "Fofana", "Cucurella", "Caicedo", "Enzo", "Palmer", "Neto", "Sancho", "Jackson"],
+    "missingPlayers": [{ "name": "Reece James", "position": "RB", "reason": "hamstring, doubtful start" }]
+  },
+
+  {
+    "fixtureId": "fx-today-2", "teamId": "man-city", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": [{ "name": "Rodri", "position": "CDM", "reason": "long-term ACL, out" }]
+  },
+  {
+    "fixtureId": "fx-today-2", "teamId": "liverpool", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": []
+  },
+
+  {
+    "fixtureId": "fx-today-3", "teamId": "real-madrid", "isConfirmed": true, "formation": "4-3-1-2",
+    "startingXi": ["Courtois", "Carvajal", "Rudiger", "Militao", "Mendy", "Tchouameni", "Camavinga", "Valverde", "Bellingham", "Rodrygo", "Endrick"],
+    "missingPlayers": [{ "name": "Kylian Mbappe", "position": "ST", "reason": "muscle injury, ruled out" }]
+  },
+  {
+    "fixtureId": "fx-today-3", "teamId": "sevilla", "isConfirmed": true, "formation": "4-4-2",
+    "startingXi": ["Nyland", "Carmona", "Nianzou", "Badé", "Pedrosa", "Sow", "Agoumé", "Lukebakio", "Ejuke", "En-Nesyri", "Peque"],
+    "missingPlayers": []
+  },
+
+  {
+    "fixtureId": "fx-today-4", "teamId": "barcelona", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": []
+  },
+  {
+    "fixtureId": "fx-today-4", "teamId": "atletico-madrid", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": []
+  },
+
+  {
+    "fixtureId": "fx-today-5", "teamId": "inter-milan", "isConfirmed": true, "formation": "3-5-2",
+    "startingXi": ["Sommer", "Bastoni", "Acerbi", "de Vrij", "Dumfries", "Barella", "Calhanoglu", "Mkhitaryan", "Dimarco", "Lautaro", "Thuram"],
+    "missingPlayers": []
+  },
+  {
+    "fixtureId": "fx-today-5", "teamId": "napoli", "isConfirmed": true, "formation": "4-3-3",
+    "startingXi": ["Meret", "Di Lorenzo", "Rrahmani", "Buongiorno", "Olivera", "Anguissa", "Lobotka", "McTominay", "Politano", "Raspadori", "Kvaratskhelia"],
+    "missingPlayers": [{ "name": "Romelu Lukaku", "position": "ST", "reason": "thigh strain, rotation risk" }]
+  },
+
+  {
+    "fixtureId": "fx-today-6", "teamId": "ac-milan", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": []
+  },
+  {
+    "fixtureId": "fx-today-6", "teamId": "juventus", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": []
+  },
+
+  {
+    "fixtureId": "fx-today-7", "teamId": "bayern-munich", "isConfirmed": true, "formation": "4-2-3-1",
+    "startingXi": ["Neuer", "Laimer", "Upamecano", "Kim", "Guerreiro", "Kimmich", "Palhinha", "Musiala", "Olise", "Gnabry", "Kane"],
+    "missingPlayers": [
+      { "name": "Alphonso Davies", "position": "LB", "reason": "ACL, long-term out" },
+      { "name": "Leon Goretzka", "position": "CM", "reason": "calf injury, out" }
+    ]
+  },
+  {
+    "fixtureId": "fx-today-7", "teamId": "leverkusen", "isConfirmed": true, "formation": "3-4-3",
+    "startingXi": ["Hradecky", "Tapsoba", "Tah", "Hincapie", "Frimpong", "Xhaka", "Palacios", "Grimaldo", "Wirtz", "Boniface", "Schick"],
+    "missingPlayers": []
+  },
+
+  {
+    "fixtureId": "fx-today-8", "teamId": "dortmund", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": []
+  },
+  {
+    "fixtureId": "fx-today-8", "teamId": "leipzig", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": []
+  },
+
+  {
+    "fixtureId": "fx-today-9", "teamId": "psg", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": []
+  },
+  {
+    "fixtureId": "fx-today-9", "teamId": "man-utd", "isConfirmed": false, "formation": null,
+    "startingXi": [], "missingPlayers": [{ "name": "Lisandro Martinez", "position": "CB", "reason": "long-term knee injury" }]
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "title": "Mbappe ruled out of Sevilla clash with muscle injury",
+    "url": "https://example-news.test/real-madrid-mbappe-injury",
+    "source": "BBC Sport",
+    "relatedTeamId": "real-madrid",
+    "summary": "Real Madrid confirmed Kylian Mbappe will miss the Sevilla fixture after picking up a muscle injury in training, with Endrick set to start in his place.",
+    "publishedAtOffsetHours": -3
+  },
+  {
+    "title": "Bayern sweat on double injury blow before Leverkusen top-of-the-table clash",
+    "url": "https://example-news.test/bayern-injuries-leverkusen",
+    "source": "Sky Sports",
+    "relatedTeamId": "bayern-munich",
+    "summary": "Alphonso Davies and Leon Goretzka are both confirmed out, forcing a reshuffle in Bayern's backline ahead of the visit of league leaders Leverkusen.",
+    "publishedAtOffsetHours": -5
+  },
+  {
+    "title": "Inter Milan riding five-match winning run into Napoli showdown",
+    "url": "https://example-news.test/inter-form-napoli",
+    "source": "ESPN FC",
+    "relatedTeamId": "inter-milan",
+    "summary": "Simone Inzaghi's side have won five straight and the market has reacted, with Inter's price shortening sharply across bookmakers this week.",
+    "publishedAtOffsetHours": -8
+  },
+  {
+    "title": "Napoli could rotate Lukaku after thigh complaint",
+    "url": "https://example-news.test/napoli-lukaku-doubt",
+    "source": "Sky Sports",
+    "relatedTeamId": "napoli",
+    "summary": "Romelu Lukaku trained separately from the group on Thursday and is a doubt for the trip to Inter, with Raspadori on standby to start.",
+    "publishedAtOffsetHours": -6
+  },
+  {
+    "title": "Rodri to miss rest of season with ACL injury",
+    "url": "https://example-news.test/man-city-rodri-acl",
+    "source": "BBC Sport",
+    "relatedTeamId": "man-city",
+    "summary": "Manchester City confirmed Rodri's ACL injury will keep him sidelined for the remainder of the campaign, a significant blow ahead of the Liverpool fixture.",
+    "publishedAtOffsetHours": -30
+  },
+  {
+    "title": "James a doubt for Chelsea's trip to the Emirates",
+    "url": "https://example-news.test/chelsea-james-doubt",
+    "source": "ESPN FC",
+    "relatedTeamId": "chelsea",
+    "summary": "Reece James picked up a minor hamstring issue in training and is rated a doubtful starter against Arsenal this weekend.",
+    "publishedAtOffsetHours": -10
+  },
+  {
+    "title": "Martinez to miss Champions League clash with Paris Saint-Germain",
+    "url": "https://example-news.test/man-utd-martinez-injury",
+    "source": "Sky Sports",
+    "relatedTeamId": "man-utd",
+    "summary": "Lisandro Martinez remains out with a long-term knee issue, leaving United short at centre-back for the trip to Paris.",
+    "publishedAtOffsetHours": -20
+  }
+]

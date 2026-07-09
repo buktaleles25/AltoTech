@@ -1,0 +1,176 @@
+// Football value-betting analysis system — data model
+// See /root/.claude/plans/line-up-zippy-cocke.md for the design rationale.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id            String   @id @default(cuid())
+  name          String
+  shortName     String?
+  league        String
+  country       String?
+  logoUrl       String?
+  apiFootballId String?  @unique
+  sportsDbId    String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  homeFixtures Fixture[]  @relation("HomeTeam")
+  awayFixtures Fixture[]  @relation("AwayTeam")
+  lineups      Lineup[]
+  newsItems    NewsItem[]
+
+  @@index([league])
+}
+
+// status: SCHEDULED | LIVE | FINISHED | POSTPONED | CANCELLED (see lib/constants.ts)
+model Fixture {
+  id            String   @id @default(cuid())
+  homeTeamId    String
+  awayTeamId    String
+  league        String
+  kickoffAt     DateTime
+  status        String   @default("SCHEDULED")
+  homeScore     Int?
+  awayScore     Int?
+  apiFootballId String?  @unique
+  oddsApiId     String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  homeTeam         Team              @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam         Team              @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  oddsSnapshots    OddsSnapshot[]
+  lineups          Lineup[]
+  modelPredictions ModelPrediction[]
+  stepLegs         StepLeg[]
+
+  @@index([kickoffAt])
+  @@index([league])
+}
+
+model OddsSnapshot {
+  id              String   @id @default(cuid())
+  fixtureId       String
+  bookmaker       String
+  market          String   @default("h2h")
+  homeOdds        Float
+  drawOdds        Float?
+  awayOdds        Float
+  impliedHomeProb Float
+  impliedDrawProb Float?
+  impliedAwayProb Float
+  isOpeningLine   Boolean  @default(false)
+  capturedAt      DateTime @default(now())
+
+  fixture Fixture @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
+
+  @@index([fixtureId, capturedAt])
+}
+
+model Lineup {
+  id                 String   @id @default(cuid())
+  fixtureId          String
+  teamId             String
+  formation          String?
+  isConfirmed        Boolean  @default(false)
+  startingXiJson     String?
+  missingPlayersJson String?
+  capturedAt         DateTime @default(now())
+
+  fixture Fixture @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
+  team    Team    @relation(fields: [teamId], references: [id])
+
+  @@unique([fixtureId, teamId])
+}
+
+model NewsItem {
+  id            String   @id @default(cuid())
+  title         String
+  url           String   @unique
+  source        String
+  publishedAt   DateTime
+  relatedTeamId String?
+  summary       String?
+  createdAt     DateTime @default(now())
+
+  relatedTeam Team? @relation(fields: [relatedTeamId], references: [id])
+
+  @@index([publishedAt])
+  @@index([relatedTeamId])
+}
+
+model ModelPrediction {
+  id              String   @id @default(cuid())
+  fixtureId       String
+  modelHomeProb   Float
+  modelDrawProb   Float
+  modelAwayProb   Float
+  edgeHome        Float
+  edgeDraw        Float
+  edgeAway        Float
+  confidenceScore Float
+  reasoning       String?
+  computedAt      DateTime @default(now())
+
+  fixture Fixture @relation(fields: [fixtureId], references: [id], onDelete: Cascade)
+
+  @@index([fixtureId, computedAt])
+}
+
+// status: PENDING | SETTLED, resultOutcome: PENDING | WIN | LOSE | VOID (see lib/constants.ts)
+model Step {
+  id             String   @id @default(cuid())
+  date           DateTime @unique
+  status         String   @default("PENDING")
+  combinedOdds   Float
+  resultOutcome  String   @default("PENDING")
+  isFullStrength Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  legs   StepLeg[]
+  result StepResult?
+}
+
+// selection: HOME | DRAW | AWAY, legResult: PENDING | WON | LOST | VOID (see lib/constants.ts)
+model StepLeg {
+  id         String  @id @default(cuid())
+  stepId     String
+  fixtureId  String
+  selection  String
+  odds       Float
+  edge       Float
+  confidence Float
+  reasoning  String?
+  legResult  String  @default("PENDING")
+
+  step    Step    @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  fixture Fixture @relation(fields: [fixtureId], references: [id])
+
+  @@unique([stepId, fixtureId])
+}
+
+model StepResult {
+  id                String   @id @default(cuid())
+  stepId            String   @unique
+  settledAt         DateTime @default(now())
+  actualOutcomeJson String
+  profitLossUnits   Float
+
+  step Step @relation(fields: [stepId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}

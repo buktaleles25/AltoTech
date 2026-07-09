@@ -1,0 +1,37 @@
+[
+  { "fixtureId": "fx-today-1", "bookmaker": "Opening", "homeOdds": 2.10, "drawOdds": 3.40, "awayOdds": 3.40, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-1", "bookmaker": "Bet365", "homeOdds": 1.95, "drawOdds": 3.50, "awayOdds": 3.90, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-1", "bookmaker": "Pinnacle", "homeOdds": 1.93, "drawOdds": 3.55, "awayOdds": 3.95, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-2", "bookmaker": "Opening", "homeOdds": 2.00, "drawOdds": 3.60, "awayOdds": 3.50, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-2", "bookmaker": "Bet365", "homeOdds": 2.05, "drawOdds": 3.55, "awayOdds": 3.45, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-2", "bookmaker": "Pinnacle", "homeOdds": 2.05, "drawOdds": 3.60, "awayOdds": 3.40, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-3", "bookmaker": "Opening", "homeOdds": 1.50, "drawOdds": 4.20, "awayOdds": 6.50, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-3", "bookmaker": "Bet365", "homeOdds": 1.55, "drawOdds": 4.10, "awayOdds": 6.00, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-3", "bookmaker": "Pinnacle", "homeOdds": 1.57, "drawOdds": 4.00, "awayOdds": 6.20, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-4", "bookmaker": "Opening", "homeOdds": 1.90, "drawOdds": 3.60, "awayOdds": 4.00, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-4", "bookmaker": "Bet365", "homeOdds": 1.85, "drawOdds": 3.65, "awayOdds": 4.10, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-4", "bookmaker": "Pinnacle", "homeOdds": 1.87, "drawOdds": 3.60, "awayOdds": 4.05, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-5", "bookmaker": "Opening", "homeOdds": 2.00, "drawOdds": 3.40, "awayOdds": 3.80, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-5", "bookmaker": "Bet365", "homeOdds": 1.70, "drawOdds": 3.80, "awayOdds": 4.60, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-5", "bookmaker": "Pinnacle", "homeOdds": 1.72, "drawOdds": 3.75, "awayOdds": 4.50, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-6", "bookmaker": "Opening", "homeOdds": 2.60, "drawOdds": 3.20, "awayOdds": 2.70, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-6", "bookmaker": "Bet365", "homeOdds": 2.55, "drawOdds": 3.25, "awayOdds": 2.75, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-6", "bookmaker": "Pinnacle", "homeOdds": 2.58, "drawOdds": 3.20, "awayOdds": 2.70, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-7", "bookmaker": "Opening", "homeOdds": 1.55, "drawOdds": 4.20, "awayOdds": 5.50, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-7", "bookmaker": "Bet365", "homeOdds": 1.60, "drawOdds": 4.10, "awayOdds": 5.20, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-7", "bookmaker": "Pinnacle", "homeOdds": 1.62, "drawOdds": 4.00, "awayOdds": 5.10, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-8", "bookmaker": "Opening", "homeOdds": 2.10, "drawOdds": 3.40, "awayOdds": 3.30, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-8", "bookmaker": "Bet365", "homeOdds": 2.15, "drawOdds": 3.35, "awayOdds": 3.25, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-8", "bookmaker": "Pinnacle", "homeOdds": 2.12, "drawOdds": 3.38, "awayOdds": 3.30, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+
+  { "fixtureId": "fx-today-9", "bookmaker": "Opening", "homeOdds": 1.45, "drawOdds": 4.50, "awayOdds": 6.50, "isOpeningLine": true, "capturedAtOffsetHours": -48 },
+  { "fixtureId": "fx-today-9", "bookmaker": "Bet365", "homeOdds": 1.42, "drawOdds": 4.60, "awayOdds": 7.00, "isOpeningLine": false, "capturedAtOffsetHours": -1 },
+  { "fixtureId": "fx-today-9", "bookmaker": "Pinnacle", "homeOdds": 1.44, "drawOdds": 4.50, "awayOdds": 6.80, "isOpeningLine": false, "capturedAtOffsetHours": -1 }
+]

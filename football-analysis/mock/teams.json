@@ -1,0 +1,33 @@
+[
+  { "id": "arsenal", "name": "Arsenal", "shortName": "ARS", "league": "Premier League", "country": "England" },
+  { "id": "chelsea", "name": "Chelsea", "shortName": "CHE", "league": "Premier League", "country": "England" },
+  { "id": "man-city", "name": "Manchester City", "shortName": "MCI", "league": "Premier League", "country": "England" },
+  { "id": "liverpool", "name": "Liverpool", "shortName": "LIV", "league": "Premier League", "country": "England" },
+  { "id": "man-utd", "name": "Manchester United", "shortName": "MUN", "league": "Premier League", "country": "England" },
+  { "id": "tottenham", "name": "Tottenham Hotspur", "shortName": "TOT", "league": "Premier League", "country": "England" },
+  { "id": "newcastle", "name": "Newcastle United", "shortName": "NEW", "league": "Premier League", "country": "England" },
+  { "id": "west-ham", "name": "West Ham United", "shortName": "WHU", "league": "Premier League", "country": "England" },
+
+  { "id": "real-madrid", "name": "Real Madrid", "shortName": "RMA", "league": "La Liga", "country": "Spain" },
+  { "id": "barcelona", "name": "Barcelona", "shortName": "BAR", "league": "La Liga", "country": "Spain" },
+  { "id": "atletico-madrid", "name": "Atletico Madrid", "shortName": "ATM", "league": "La Liga", "country": "Spain" },
+  { "id": "sevilla", "name": "Sevilla", "shortName": "SEV", "league": "La Liga", "country": "Spain" },
+  { "id": "valencia", "name": "Valencia", "shortName": "VAL", "league": "La Liga", "country": "Spain" },
+  { "id": "real-sociedad", "name": "Real Sociedad", "shortName": "RSO", "league": "La Liga", "country": "Spain" },
+
+  { "id": "inter-milan", "name": "Inter Milan", "shortName": "INT", "league": "Serie A", "country": "Italy" },
+  { "id": "ac-milan", "name": "AC Milan", "shortName": "MIL", "league": "Serie A", "country": "Italy" },
+  { "id": "juventus", "name": "Juventus", "shortName": "JUV", "league": "Serie A", "country": "Italy" },
+  { "id": "napoli", "name": "Napoli", "shortName": "NAP", "league": "Serie A", "country": "Italy" },
+  { "id": "roma", "name": "AS Roma", "shortName": "ROM", "league": "Serie A", "country": "Italy" },
+  { "id": "fiorentina", "name": "Fiorentina", "shortName": "FIO", "league": "Serie A", "country": "Italy" },
+
+  { "id": "bayern-munich", "name": "Bayern Munich", "shortName": "BAY", "league": "Bundesliga", "country": "Germany" },
+  { "id": "dortmund", "name": "Borussia Dortmund", "shortName": "BVB", "league": "Bundesliga", "country": "Germany" },
+  { "id": "leipzig", "name": "RB Leipzig", "shortName": "RBL", "league": "Bundesliga", "country": "Germany" },
+  { "id": "leverkusen", "name": "Bayer Leverkusen", "shortName": "B04", "league": "Bundesliga", "country": "Germany" },
+  { "id": "frankfurt", "name": "Eintracht Frankfurt", "shortName": "SGE", "league": "Bundesliga", "country": "Germany" },
+
+  { "id": "psg", "name": "Paris Saint-Germain", "shortName": "PSG", "league": "Ligue 1", "country": "France" },
+  { "id": "marseille", "name": "Marseille", "shortName": "OM", "league": "Ligue 1", "country": "France" }
+]

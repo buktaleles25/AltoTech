@@ -1,0 +1,74 @@
+[
+  {
+    "id": "fx-today-1",
+    "homeTeamId": "arsenal",
+    "awayTeamId": "chelsea",
+    "league": "Premier League",
+    "kickoffOffsetHours": 3,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "fx-today-2",
+    "homeTeamId": "man-city",
+    "awayTeamId": "liverpool",
+    "league": "Premier League",
+    "kickoffOffsetHours": 6,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "fx-today-3",
+    "homeTeamId": "real-madrid",
+    "awayTeamId": "sevilla",
+    "league": "La Liga",
+    "kickoffOffsetHours": 2,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "fx-today-4",
+    "homeTeamId": "barcelona",
+    "awayTeamId": "atletico-madrid",
+    "league": "La Liga",
+    "kickoffOffsetHours": 5,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "fx-today-5",
+    "homeTeamId": "inter-milan",
+    "awayTeamId": "napoli",
+    "league": "Serie A",
+    "kickoffOffsetHours": 4,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "fx-today-6",
+    "homeTeamId": "ac-milan",
+    "awayTeamId": "juventus",
+    "league": "Serie A",
+    "kickoffOffsetHours": 7,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "fx-today-7",
+    "homeTeamId": "bayern-munich",
+    "awayTeamId": "leverkusen",
+    "league": "Bundesliga",
+    "kickoffOffsetHours": 1,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "fx-today-8",
+    "homeTeamId": "dortmund",
+    "awayTeamId": "leipzig",
+    "league": "Bundesliga",
+    "kickoffOffsetHours": 8,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "fx-today-9",
+    "homeTeamId": "psg",
+    "awayTeamId": "man-utd",
+    "league": "Champions League",
+    "kickoffOffsetHours": 9,
+    "status": "SCHEDULED"
+  }
+]
