@@ -80,10 +80,17 @@ export const TRACKED_LEAGUES = [
 export const DEFAULT_TOTAL_GOALS = 2.6;
 
 /** Minimum expected value (per unit stake at best price) for a bet to be recommended. */
-export const VALUE_EDGE_THRESHOLD = 0.02;
+export const VALUE_EDGE_THRESHOLD = 0.012;
 
 /** Minimum confidence (0-100) for a Pick to be surfaced on the daily board. */
 export const MIN_PICK_CONFIDENCE = 45;
+
+/**
+ * Ranking multiplier that favours the cleaner two-way markets (Asian Handicap, Over/Under) over
+ * three-way 1X2 at equal EV — a two-way bet has lower margin and lower variance, so equal EV
+ * there is a better bet. This also aligns the board with the handicap/total markets punters use.
+ */
+export const TWO_WAY_MARKET_PREFERENCE = 1.25;
 
 /** Max recommended bets stored per fixture (the best few by EV×confidence). */
 export const MAX_PICKS_PER_FIXTURE = 2;

@@ -8,6 +8,7 @@ import {
   MIN_PICK_CONFIDENCE,
   MODEL_SUPREMACY_WEIGHT,
   TRACKED_LEAGUES,
+  TWO_WAY_MARKET_PREFERENCE,
   VALUE_EDGE_THRESHOLD,
 } from "@/lib/constants";
 import { deVig, deVigTwoWay } from "./devig";
@@ -67,12 +68,15 @@ export async function analyzeFixture(fixtureId: string): Promise<FixtureAnalysis
   const lineupsConfirmed = fixture.lineups.some((l) => l.isConfirmed);
   const dataCompleteness = 0.4 + 0.3 * (hasStrength ? 1 : 0) + 0.2 * (hasTotals ? 1 : 0) + 0.1 * (lineupsConfirmed ? 1 : 0);
 
+  const rankScore = (c: { ev: number; confidence: number; market: string }) =>
+    c.ev * c.confidence * (c.market === "H2H" ? 1 : TWO_WAY_MARKET_PREFERENCE);
+
   const candidates = findValueBets(model, quotes, dataCompleteness);
   const qualifying = candidates
     .filter((c) => c.ev >= VALUE_EDGE_THRESHOLD && c.confidence >= MIN_PICK_CONFIDENCE && c.bestOdds <= MAX_PICK_ODDS)
-    // Rank by EV × confidence so tight, high-confidence lines (Asian Handicap, totals) win over
-    // high-variance longshots that merely have a big raw EV from one soft book.
-    .sort((a, b) => b.ev * b.confidence - a.ev * a.confidence)
+    // Rank by EV × confidence, with a variance preference for the two-way handicap/total markets,
+    // so tight reliable lines win over high-variance longshots with a merely-big raw EV.
+    .sort((a, b) => rankScore(b) - rankScore(a))
     .slice(0, MAX_PICKS_PER_FIXTURE);
 
   const kickoffDay = new Date(fixture.kickoffAt);
