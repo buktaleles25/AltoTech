@@ -110,14 +110,16 @@ export function formatEdge(edge: number): string {
   return `${edge >= 0 ? "+" : ""}${pct}%`;
 }
 
+// Servers run UTC but the audience is Thai — pin every displayed time to Asia/Bangkok, or
+// kickoff times render 7 hours early.
 export function formatKickoff(date: Date | string): string {
   const d = new Date(date);
-  return d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" });
 }
 
 export function formatMatchDate(date: Date | string): string {
   const d = new Date(date);
-  return d.toLocaleDateString("th-TH", { weekday: "short", day: "numeric", month: "short" });
+  return d.toLocaleDateString("th-TH", { weekday: "short", day: "numeric", month: "short", timeZone: "Asia/Bangkok" });
 }
 
 export type ConfidenceTier = "high" | "medium" | "low";

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import PickCard, { type PickCardData } from "@/components/PickCard";
 import DisclaimerNote from "@/components/DisclaimerNote";
 import { formatMatchDate } from "@/lib/format";
+import { bangkokEndOfDay } from "@/lib/time";
 
 // Reads today's recommended value bets straight from the DB (changes through the day) — never
 // freeze as a static build-time snapshot.
@@ -13,16 +14,8 @@ export default async function TodayPage(props: PageProps<"/">) {
   const when = params.when === "today" ? "today" : "upcoming";
 
   const now = new Date();
-  let windowEnd: Date;
-  if (when === "today") {
-    // Only kickoffs before midnight tonight (local server time).
-    windowEnd = new Date(now);
-    windowEnd.setHours(23, 59, 59, 999);
-  } else {
-    windowEnd = new Date(now);
-    windowEnd.setHours(0, 0, 0, 0);
-    windowEnd.setDate(windowEnd.getDate() + 3); // upcoming value bets over the next few days
-  }
+  // Day boundaries in Bangkok time — the server runs UTC, 7 hours behind the audience's clock.
+  const windowEnd = when === "today" ? bangkokEndOfDay(now) : bangkokEndOfDay(now, 2);
 
   const picks = await prisma.pick.findMany({
     where: { result: "PENDING", fixture: { kickoffAt: { gte: now, lte: windowEnd } } },
@@ -38,8 +31,7 @@ export default async function TodayPage(props: PageProps<"/">) {
     return b.best.edge * b.best.confidence - a.best.edge * a.best.confidence;
   });
 
-  const todayEnd = new Date(now);
-  todayEnd.setHours(23, 59, 59, 999);
+  const todayEnd = bangkokEndOfDay(now);
   const matchesToday = groups.filter((g) => new Date(g.best.fixture.kickoffAt) <= todayEnd).length;
   const avgEv = picks.length > 0 ? picks.reduce((s, p) => s + p.edge, 0) / picks.length : 0;
 
@@ -66,7 +58,16 @@ export default async function TodayPage(props: PageProps<"/">) {
       <FilterTabs when={when} />
 
       {groups.length === 0 ? (
-        <EmptyState when={when} />
+        <EmptyState
+          when={when}
+          upcomingCount={
+            when === "today"
+              ? await prisma.pick.count({
+                  where: { result: "PENDING", fixture: { kickoffAt: { gt: windowEnd, lte: bangkokEndOfDay(now, 2) } } },
+                })
+              : 0
+          }
+        />
       ) : (
         <section className="mt-3 flex flex-col gap-3 pb-4">
           {groups.map((g) => (
@@ -124,16 +125,21 @@ function FilterTabs({ when }: { when: "today" | "upcoming" }) {
   );
 }
 
-function EmptyState({ when }: { when: "today" | "upcoming" }) {
+function EmptyState({ when, upcomingCount }: { when: "today" | "upcoming"; upcomingCount: number }) {
   return (
     <div className="mt-8 rounded-2xl border border-dashed border-border-subtle p-6 text-center">
       <p className="text-sm text-text-secondary">
-        {when === "today" ? "วันนี้ยังไม่มีบิลที่ผ่านเกณฑ์" : "ช่วงนี้ยังไม่มีบิลที่ผ่านเกณฑ์"}
+        {when === "today" ? "วันนี้ (ตามเวลาไทย) ยังไม่มีบิลที่ผ่านเกณฑ์" : "ช่วงนี้ยังไม่มีบิลที่ผ่านเกณฑ์"}
       </p>
-      <p className="mt-1 text-xs text-text-muted">
-        ระบบจะแนะนำเฉพาะบิลที่มี value จริง (ราคาน้ำคุ้มกว่าที่ควรจะเป็น) — ถ้าวันไหนตลาดตั้งราคาแม่นหมด ก็จะไม่ฝืนแนะนำ
-        {when === "today" && " ลองแท็บ “เร็ว ๆ นี้” สำหรับคู่ที่กำลังจะมาถึง"}
-      </p>
+      {when === "today" && upcomingCount > 0 ? (
+        <Link href="/" className="mt-3 inline-block rounded-lg bg-accent-soft px-3 py-1.5 text-xs font-semibold text-accent">
+          มีบิลวันถัดไปรออยู่ {upcomingCount} ใบ — ดูในแท็บ &ldquo;เร็ว ๆ นี้&rdquo;
+        </Link>
+      ) : (
+        <p className="mt-1 text-xs text-text-muted">
+          ระบบจะแนะนำเฉพาะบิลที่มี value จริง (ราคาน้ำคุ้มกว่าที่ควรจะเป็น) — ถ้าวันไหนตลาดตั้งราคาแม่นหมด ก็จะไม่ฝืนแนะนำ
+        </p>
+      )}
     </div>
   );
 }

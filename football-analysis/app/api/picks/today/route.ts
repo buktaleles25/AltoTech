@@ -1,21 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { bangkokEndOfDay } from "@/lib/time";
 
 /**
  * Recommended value bets, soonest kickoff first.
- * `?when=today` → only kickoffs before midnight tonight; otherwise the next few days (default).
+ * `?when=today` → only kickoffs before midnight tonight (Bangkok time); otherwise the next few
+ * days (default). Day boundaries are Thai — the server clock is UTC, 7 hours behind the audience.
  */
 export async function GET(request: Request) {
   const when = new URL(request.url).searchParams.get("when") === "today" ? "today" : "upcoming";
 
   const now = new Date();
-  const windowEnd = new Date(now);
-  if (when === "today") {
-    windowEnd.setHours(23, 59, 59, 999);
-  } else {
-    windowEnd.setHours(0, 0, 0, 0);
-    windowEnd.setDate(windowEnd.getDate() + 3);
-  }
+  const windowEnd = when === "today" ? bangkokEndOfDay(now) : bangkokEndOfDay(now, 2);
 
   const picks = await prisma.pick.findMany({
     where: { result: "PENDING", fixture: { kickoffAt: { gte: now, lte: windowEnd } } },

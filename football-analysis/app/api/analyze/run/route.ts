@@ -4,12 +4,13 @@ import { prisma } from "@/lib/db";
 import { analyzeFixture } from "@/lib/analysis/analyze";
 import { settlePendingPicks } from "@/lib/analysis/settlement";
 import { ingestTeamStrength } from "@/lib/ingestion/footballData";
+import { ingestScores } from "@/lib/ingestion/scores";
 import { FixtureStatus, ANALYZE_LOOKAHEAD_DAYS } from "@/lib/constants";
 
 /**
  * Daily pipeline: refresh current-season team strength (football-data.org, if configured),
- * re-analyze every scheduled fixture within the lookahead window into recommended Picks, then
- * settle any pending Picks whose fixtures have finished.
+ * re-analyze every scheduled fixture within the lookahead window into recommended Picks, pull in
+ * final scores for fixtures that have ended, then settle any pending Picks (grading + CLV).
  */
 async function handler(request: NextRequest) {
   const unauthorized = requireCronSecret(request);
@@ -34,9 +35,10 @@ async function handler(request: NextRequest) {
     }
   }
 
+  const scores = await ingestScores();
   const settlement = await settlePendingPicks();
 
-  return NextResponse.json({ ok: true, strength, analyzed, picks, settlement });
+  return NextResponse.json({ ok: true, strength, analyzed, picks, scores, settlement });
 }
 
 // POST: worker/scheduler.ts + manual curl. GET: Vercel Cron always calls via GET.

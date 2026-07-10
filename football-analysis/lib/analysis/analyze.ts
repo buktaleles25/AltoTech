@@ -15,6 +15,7 @@ import {
 import { deVig, deVigTwoWay } from "./devig";
 import { fitScoreMatrix, nudgeSupremacy } from "./marketModel";
 import { matchOutcomeProbs } from "./poisson";
+import { bangkokStartOfDay } from "@/lib/time";
 import { computeSteamDelta, steamConfidenceAdjustment, steamNote } from "./steam";
 import { diversifyCandidates, findValueBets, type MarketQuotes, type H2HQuote, type SpreadQuote, type TotalQuote } from "./valueFinder";
 
@@ -76,6 +77,13 @@ export async function analyzeFixture(fixtureId: string): Promise<FixtureAnalysis
   // Line movement since open: sharp money moving toward a side validates it, against it warns.
   const steamDelta = computeSteamDelta(openingH2HConsensus(fixture.oddsSnapshots), fairH2H);
 
+  // Directions already recommended for this fixture (still pending) — kept, never re-litigated.
+  const existingPicks = await prisma.pick.findMany({
+    where: { fixtureId, result: "PENDING" },
+    select: { side: true },
+  });
+  const existingDirections = new Set(existingPicks.map((p) => p.side));
+
   const candidates = findValueBets(model, quotes, dataCompleteness).map((c) => ({
     ...c,
     confidence: clampConfidence(c.confidence + steamConfidenceAdjustment(c.market, c.side, steamDelta)),
@@ -94,16 +102,20 @@ export async function analyzeFixture(fixtureId: string): Promise<FixtureAnalysis
       .sort((a, b) => rankScore(b) - rankScore(a)),
     // One pick per direction (best line only) — "Home win" + "Home −0.25" + "Home −0.5" is one
     // opinion three times, not three recommendations.
-  ).slice(0, MAX_PICKS_PER_FIXTURE);
+  )
+    // A published recommendation is a commitment: it never silently disappears when a later run
+    // finds the value has evaporated (users plan around it, and history/CLV must grade the price
+    // we actually recommended). Re-analysis may only ADD picks in directions not yet taken,
+    // up to the per-fixture cap.
+    .filter((c) => !existingDirections.has(c.side))
+    .slice(0, Math.max(0, MAX_PICKS_PER_FIXTURE - existingDirections.size));
 
-  const kickoffDay = new Date(fixture.kickoffAt);
-  kickoffDay.setHours(0, 0, 0, 0);
+  const kickoffDay = bangkokStartOfDay(new Date(fixture.kickoffAt));
 
   const outcome = matchOutcomeProbs(model);
   const h2hBest = bestH2HOdds(quotes.h2h);
 
   await prisma.$transaction([
-    prisma.pick.deleteMany({ where: { fixtureId, result: "PENDING" } }),
     prisma.modelPrediction.create({
       data: {
         fixtureId,
@@ -144,7 +156,7 @@ export async function analyzeFixture(fixtureId: string): Promise<FixtureAnalysis
     ),
   ]);
 
-  return { fixtureId, picks: qualifying.length };
+  return { fixtureId, picks: existingDirections.size + qualifying.length };
 }
 
 // --- quote assembly ------------------------------------------------------------------------------
