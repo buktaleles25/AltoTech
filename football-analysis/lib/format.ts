@@ -77,6 +77,34 @@ export function marketTag(market: string): string {
   return "1X2";
 }
 
+/**
+ * Chip styling per market — identity color validated against the dark surface; the Thai label
+ * (marketTag) always rides along, so color never carries identity alone.
+ */
+export function marketChipClass(market: string): string {
+  if (market === "AH") return "bg-market-ah-soft text-market-ah";
+  if (market === "OU") return "bg-market-ou-soft text-market-ou";
+  return "bg-surface-2 text-text-secondary";
+}
+
+/** "1.25u" / "1u" — suggested stake in flat units. */
+export function formatUnits(units: number): string {
+  const s = Number.isInteger(units) ? String(units) : units.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  return `${s}u`;
+}
+
+/**
+ * Thai countdown to kickoff for same-day urgency: "อีก 45 นาที" under an hour, "อีก 3 ชม." under a
+ * day, null beyond that (the date label carries it), "เตะแล้ว" once started.
+ */
+export function kickoffCountdown(date: Date | string, now: Date = new Date()): string | null {
+  const diffMin = Math.round((new Date(date).getTime() - now.getTime()) / 60000);
+  if (diffMin <= 0) return "เตะแล้ว";
+  if (diffMin < 60) return `อีก ${diffMin} นาที`;
+  if (diffMin < 24 * 60) return `อีก ${Math.round(diffMin / 60)} ชม.`;
+  return null;
+}
+
 export function formatEdge(edge: number): string {
   const pct = (edge * 100).toFixed(1);
   return `${edge >= 0 ? "+" : ""}${pct}%`;
@@ -100,10 +128,13 @@ export function confidenceTier(confidence: number): ConfidenceTier {
   return "low";
 }
 
-export const CONFIDENCE_TIER_STYLES: Record<ConfidenceTier, { label: string; text: string; bg: string; ring: string }> = {
-  high: { label: "มั่นใจสูง", text: "text-accent", bg: "bg-accent-soft", ring: "ring-accent/40" },
-  medium: { label: "มั่นใจปานกลาง", text: "text-warning", bg: "bg-warning-soft", ring: "ring-warning/40" },
-  low: { label: "มั่นใจต่ำ", text: "text-danger", bg: "bg-danger-soft", ring: "ring-danger/40" },
+export const CONFIDENCE_TIER_STYLES: Record<
+  ConfidenceTier,
+  { label: string; text: string; bg: string; ring: string; bar: string }
+> = {
+  high: { label: "มั่นใจสูง", text: "text-accent", bg: "bg-accent-soft", ring: "ring-accent/40", bar: "bg-accent" },
+  medium: { label: "มั่นใจปานกลาง", text: "text-warning", bg: "bg-warning-soft", ring: "ring-warning/40", bar: "bg-warning" },
+  low: { label: "มั่นใจต่ำ", text: "text-danger", bg: "bg-danger-soft", ring: "ring-danger/40", bar: "bg-danger" },
 };
 
 export function teamInitials(name: string): string {

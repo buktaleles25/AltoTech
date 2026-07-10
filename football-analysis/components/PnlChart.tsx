@@ -46,7 +46,8 @@ export default function PnlChart({ points }: { points: Point[] }) {
           strokeLinejoin="round"
         />
         {points.map((p, i) => (
-          <circle key={p.label} cx={xFor(i)} cy={yFor(p.cumulativeUnits)} r={i === points.length - 1 ? 3 : 2} fill={isPositive ? "var(--accent)" : "var(--danger)"} />
+          // Index keys: several picks can settle on the same date, so the label isn't unique.
+          <circle key={i} cx={xFor(i)} cy={yFor(p.cumulativeUnits)} r={i === points.length - 1 ? 3 : 2} fill={isPositive ? "var(--accent)" : "var(--danger)"} />
         ))}
       </svg>
       <div className="mt-1 flex justify-between text-[10px] text-text-muted">

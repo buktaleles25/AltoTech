@@ -38,23 +38,37 @@ export default async function TodayPage(props: PageProps<"/">) {
     return b.best.edge * b.best.confidence - a.best.edge * a.best.confidence;
   });
 
+  const todayEnd = new Date(now);
+  todayEnd.setHours(23, 59, 59, 999);
+  const matchesToday = groups.filter((g) => new Date(g.best.fixture.kickoffAt) <= todayEnd).length;
+  const avgEv = picks.length > 0 ? picks.reduce((s, p) => s + p.edge, 0) / picks.length : 0;
+
   return (
     <div className="flex flex-1 flex-col px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
-      <header className="mb-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-accent">บิลเด็ด</p>
-        <h1 className="text-2xl font-bold text-text-primary">{formatMatchDate(now)}</h1>
-        <p className="mt-1 text-sm text-text-secondary">
-          คู่ที่ระบบเจอ &ldquo;value&rdquo; จากราคาน้ำจริง — บอกเลยว่าเล่นตลาดไหน เส้นไหน ที่ราคาน้ำเท่าไหร่
-          และเจ้าไหนให้ราคาดีสุด แต่ละบิลเล่นแยกกันได้ (คู่ที่มีหลายตัวเลือก แตะเข้าไปดูครบได้)
+      <header className="mb-3">
+        <div className="flex items-baseline justify-between">
+          <h1 className="text-2xl font-bold text-text-primary">บิลเด็ด</h1>
+          <p className="text-sm font-medium text-text-secondary">{formatMatchDate(now)}</p>
+        </div>
+        <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
+          บิลที่เจอ value จากราคาน้ำจริง — ตลาดไหน เส้นไหน เจ้าไหนให้ราคาดีสุด พร้อมขนาดเดิมพันแนะนำ
         </p>
       </header>
+
+      {picks.length > 0 && (
+        <section className="mb-3 grid grid-cols-3 gap-2">
+          <StatTile label="บิลแนะนำ" value={String(picks.length)} />
+          <StatTile label="EV เฉลี่ย" value={`+${(avgEv * 100).toFixed(1)}%`} accent />
+          <StatTile label="คู่วันนี้" value={String(matchesToday)} />
+        </section>
+      )}
 
       <FilterTabs when={when} />
 
       {groups.length === 0 ? (
         <EmptyState when={when} />
       ) : (
-        <section className="mt-4 flex flex-col gap-3 pb-4">
+        <section className="mt-3 flex flex-col gap-3 pb-4">
           {groups.map((g) => (
             <PickCard key={g.best.id} pick={g.best} extraCount={g.extraCount} />
           ))}
@@ -62,6 +76,15 @@ export default async function TodayPage(props: PageProps<"/">) {
       )}
 
       <DisclaimerNote />
+    </div>
+  );
+}
+
+function StatTile({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="rounded-xl border border-border-subtle bg-surface p-2.5 text-center">
+      <p className={`text-lg font-semibold ${accent ? "text-accent" : "text-text-primary"}`}>{value}</p>
+      <p className="mt-0.5 text-[10px] text-text-muted">{label}</p>
     </div>
   );
 }

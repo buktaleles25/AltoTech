@@ -171,6 +171,10 @@ model Pick {
   reasoning       String?
   result          String    @default("PENDING")
   profitLossUnits Float?
+  // Closing-line value: the market's final pre-kickoff price for this same bet, captured at
+  // settlement. clv = odds/closingOdds - 1; consistently positive CLV = real predictive skill.
+  closingOdds     Float?
+  clv             Float?
   settledAt       DateTime?
   createdAt       DateTime  @default(now())
 

@@ -23,6 +23,13 @@
   --danger-soft: #f43f5e22;
 
   --info: #38bdf8;
+
+  /* Market identity hues (validated for CVD separation + contrast on --surface; chips always
+     carry a Thai text label, so color reinforces identity but never carries it alone). */
+  --market-ah: #0f96d6;
+  --market-ah-soft: #0f96d61f;
+  --market-ou: #8b5cf6;
+  --market-ou-soft: #8b5cf61f;
 }
 
 @theme inline {
@@ -49,6 +56,11 @@
   --color-danger-soft: var(--danger-soft);
 
   --color-info: var(--info);
+
+  --color-market-ah: var(--market-ah);
+  --color-market-ah-soft: var(--market-ah-soft);
+  --color-market-ou: var(--market-ou);
+  --color-market-ou-soft: var(--market-ou-soft);
 }
 
 * {
@@ -60,10 +72,20 @@ html {
 }
 
 body {
-  background: var(--background);
+  /* Subtle top glow so the dark theme reads as depth rather than a flat black sheet. */
+  background:
+    radial-gradient(90% 40% at 50% 0%, #12202e 0%, transparent 70%),
+    var(--background);
   color: var(--text-primary);
   font-family: var(--font-sans), system-ui, sans-serif;
   min-height: 100dvh;
+}
+
+/* Elevated card treatment shared by the board/history cards. */
+.card-elevated {
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.55);
 }
 
 /* Hide scrollbars on the horizontally-scrolling league/day chip rows while keeping them scrollable. */

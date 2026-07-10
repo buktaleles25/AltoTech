@@ -6,6 +6,7 @@ import {
   MAX_PICK_ODDS,
   MAX_PICKS_PER_FIXTURE,
   MIN_PICK_CONFIDENCE,
+  MIN_PICK_ODDS,
   MODEL_SUPREMACY_WEIGHT,
   TRACKED_LEAGUES,
   TWO_WAY_MARKET_PREFERENCE,
@@ -14,7 +15,8 @@ import {
 import { deVig, deVigTwoWay } from "./devig";
 import { fitScoreMatrix, nudgeSupremacy } from "./marketModel";
 import { matchOutcomeProbs } from "./poisson";
-import { findValueBets, type MarketQuotes, type H2HQuote, type SpreadQuote, type TotalQuote } from "./valueFinder";
+import { computeSteamDelta, steamConfidenceAdjustment, steamNote } from "./steam";
+import { diversifyCandidates, findValueBets, type MarketQuotes, type H2HQuote, type SpreadQuote, type TotalQuote } from "./valueFinder";
 
 const SHARP_BOOK = "Pinnacle";
 
@@ -71,13 +73,28 @@ export async function analyzeFixture(fixtureId: string): Promise<FixtureAnalysis
   const rankScore = (c: { ev: number; confidence: number; market: string }) =>
     c.ev * c.confidence * (c.market === "H2H" ? 1 : TWO_WAY_MARKET_PREFERENCE);
 
-  const candidates = findValueBets(model, quotes, dataCompleteness);
-  const qualifying = candidates
-    .filter((c) => c.ev >= VALUE_EDGE_THRESHOLD && c.confidence >= MIN_PICK_CONFIDENCE && c.bestOdds <= MAX_PICK_ODDS)
-    // Rank by EV × confidence, with a variance preference for the two-way handicap/total markets,
-    // so tight reliable lines win over high-variance longshots with a merely-big raw EV.
-    .sort((a, b) => rankScore(b) - rankScore(a))
-    .slice(0, MAX_PICKS_PER_FIXTURE);
+  // Line movement since open: sharp money moving toward a side validates it, against it warns.
+  const steamDelta = computeSteamDelta(openingH2HConsensus(fixture.oddsSnapshots), fairH2H);
+
+  const candidates = findValueBets(model, quotes, dataCompleteness).map((c) => ({
+    ...c,
+    confidence: clampConfidence(c.confidence + steamConfidenceAdjustment(c.market, c.side, steamDelta)),
+  }));
+  const qualifying = diversifyCandidates(
+    candidates
+      .filter(
+        (c) =>
+          c.ev >= VALUE_EDGE_THRESHOLD &&
+          c.confidence >= MIN_PICK_CONFIDENCE &&
+          c.bestOdds >= MIN_PICK_ODDS &&
+          c.bestOdds <= MAX_PICK_ODDS,
+      )
+      // Rank by EV × confidence, with a variance preference for the two-way handicap/total markets,
+      // so tight reliable lines win over high-variance longshots with a merely-big raw EV.
+      .sort((a, b) => rankScore(b) - rankScore(a)),
+    // One pick per direction (best line only) — "Home win" + "Home −0.25" + "Home −0.5" is one
+    // opinion three times, not three recommendations.
+  ).slice(0, MAX_PICKS_PER_FIXTURE);
 
   const kickoffDay = new Date(fixture.kickoffAt);
   kickoffDay.setHours(0, 0, 0, 0);
@@ -116,7 +133,12 @@ export async function analyzeFixture(fixtureId: string): Promise<FixtureAnalysis
           fairProb: c.fairProb,
           edge: c.ev,
           confidence: c.confidence,
-          reasoning: pickReasoning(c, fixture.homeTeam.name, fixture.awayTeam.name, strengthDelta.note),
+          reasoning: pickReasoning(
+            c,
+            fixture.homeTeam.name,
+            fixture.awayTeam.name,
+            [strengthDelta.note, steamNote(c.market, c.side, steamDelta)].filter(Boolean).join(" · "),
+          ),
         },
       }),
     ),
@@ -172,6 +194,31 @@ function assembleQuotes(oddsSnapshots: OddsSnapshotRow[], marketQuotes: MarketQu
   }
 
   return { h2h, spreads, totals };
+}
+
+function clampConfidence(c: number): number {
+  return Math.max(0, Math.min(100, c));
+}
+
+/**
+ * De-vigged consensus of the OPENING h2h snapshots (average across books), for measuring how far
+ * the market has moved since open. Null when no opening rows exist yet.
+ */
+function openingH2HConsensus(
+  snapshots: Array<OddsSnapshotRow>,
+): { home: number; away: number } | null {
+  const opening = snapshots.filter((s) => s.isOpeningLine);
+  if (opening.length === 0) return null;
+  let home = 0;
+  let away = 0;
+  let n = 0;
+  for (const s of opening) {
+    const p = deVig({ home: s.homeOdds, draw: s.drawOdds, away: s.awayOdds });
+    home += p.home;
+    away += p.away;
+    n += 1;
+  }
+  return { home: home / n, away: away / n };
 }
 
 function consensusH2H(h2h: H2HQuote[]): { home: number; draw: number; away: number } {

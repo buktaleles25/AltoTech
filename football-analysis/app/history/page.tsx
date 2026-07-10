@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import PnlChart from "@/components/PnlChart";
 import DisclaimerNote from "@/components/DisclaimerNote";
-import { betLabel, formatMatchDate } from "@/lib/format";
+import { betLabel, formatMatchDate, marketChipClass, marketTag } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,11 @@ export default async function HistoryPage() {
 
   const wins = settled.filter((p) => p.result === "WON" || p.result === "HALF_WON").length;
   const winRate = settled.length ? (wins / settled.length) * 100 : 0;
+
+  // Flat 1u per bill → ROI = total profit / bills. CLV = how our recommended price compares to the
+  // market's closing price (positive = we consistently beat the close, the real skill signal).
+  const clvValues = settled.map((p) => p.clv).filter((v): v is number => v != null);
+  const avgClv = clvValues.length ? clvValues.reduce((a, b) => a + b, 0) / clvValues.length : null;
 
   const chartPoints = settled.reduce<Array<{ label: string; cumulativeUnits: number }>>((acc, p) => {
     const previous = acc.length > 0 ? acc[acc.length - 1].cumulativeUnits : 0;
@@ -49,6 +54,16 @@ export default async function HistoryPage() {
             <StatTile label="อัตราถูก" value={`${winRate.toFixed(0)}%`} />
             <StatTile label="กำไรสะสม" value={`${running >= 0 ? "+" : ""}${running.toFixed(2)}u`} />
           </section>
+          <section className="mt-2 grid grid-cols-2 gap-2">
+            <StatTile
+              label="ROI ต่อบิล (ลง 1u เท่ากัน)"
+              value={`${running >= 0 ? "+" : ""}${((running / settled.length) * 100).toFixed(1)}%`}
+            />
+            <StatTile
+              label="CLV เฉลี่ย (ชนะราคาปิด)"
+              value={avgClv == null ? "—" : `${avgClv >= 0 ? "+" : ""}${(avgClv * 100).toFixed(1)}%`}
+            />
+          </section>
 
           <section className="mt-4 rounded-2xl border border-border-subtle bg-surface p-4">
             <PnlChart points={chartPoints} />
@@ -61,8 +76,13 @@ export default async function HistoryPage() {
               return (
                 <div key={p.id} className="rounded-xl border border-border-subtle bg-surface p-3">
                   <div className="flex items-center justify-between text-[11px] text-text-muted">
-                    <span>{formatMatchDate(p.date)} · {p.fixture.league}</span>
-                    <span className={style.cls}>{style.label}</span>
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <span className={`shrink-0 rounded px-1 py-px text-[10px] font-semibold ${marketChipClass(p.market)}`}>
+                        {marketTag(p.market)}
+                      </span>
+                      <span className="truncate">{formatMatchDate(p.date)} · {p.fixture.league}</span>
+                    </span>
+                    <span className={`shrink-0 font-medium ${style.cls}`}>{style.label}</span>
                   </div>
                   <div className="mt-1 flex items-center justify-between gap-2">
                     <p className="min-w-0 truncate text-sm text-text-primary">

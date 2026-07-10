@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findValueBets, type MarketQuotes } from "./valueFinder";
+import { diversifyCandidates, findValueBets, type MarketQuotes } from "./valueFinder";
 import { buildScoreMatrix, matchOutcomeProbs } from "./poisson";
 
 const sm = buildScoreMatrix(1.6, 1.0);
@@ -72,5 +72,45 @@ describe("findValueBets", () => {
     for (let i = 1; i < bets.length; i++) {
       expect(bets[i - 1].ev).toBeGreaterThanOrEqual(bets[i].ev);
     }
+  });
+});
+
+describe("fair probability uses the median of soft books (outlier resistance)", () => {
+  it("one generous outlier book does not drag fair prob toward itself", () => {
+    // Three books without Pinnacle: two agree, one is a wild outlier on the home price.
+    // Under a mean the outlier would raise fairProb noticeably; the median ignores it.
+    const quotes: MarketQuotes = {
+      h2h: [
+        { bookmaker: "A", home: 2.0, draw: 3.5, away: 3.8 },
+        { bookmaker: "B", home: 2.02, draw: 3.5, away: 3.8 },
+        { bookmaker: "OutlierBook", home: 2.8, draw: 3.5, away: 3.8 },
+      ],
+      spreads: [],
+      totals: [],
+    };
+    const home = findValueBets(sm, quotes, 0.8).find((b) => b.market === "H2H" && b.side === "HOME")!;
+    // Median of the three de-vigged home probs = book B's — far from the outlier's low prob.
+    const probs = quotes.h2h
+      .map((q) => {
+        const total = 1 / q.home + 1 / (q.draw as number) + 1 / q.away;
+        return 1 / q.home / total;
+      })
+      .sort((a, b) => a - b);
+    expect(home.fairProb).toBeCloseTo(probs[1], 10);
+  });
+});
+
+describe("diversifyCandidates", () => {
+  it("keeps only the best-ranked bet per direction, preserving rank order", () => {
+    const ranked = [
+      { market: "AH", side: "HOME", tag: "best-home" },
+      { market: "H2H", side: "HOME", tag: "dup-home" },
+      { market: "OU", side: "OVER", tag: "best-over" },
+      { market: "AH", side: "HOME", tag: "dup-home-2" },
+      { market: "AH", side: "AWAY", tag: "best-away" },
+      { market: "OU", side: "OVER", tag: "dup-over" },
+    ] as const;
+    const out = diversifyCandidates([...ranked]);
+    expect(out.map((c) => c.tag)).toEqual(["best-home", "best-over", "best-away"]);
   });
 });

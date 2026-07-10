@@ -40,11 +40,36 @@ function bestOf(options: PriceOption[]): { bestOdds: number; bookmaker: string }
   );
 }
 
-/** Fair probability = the sharp book's de-vigged price if it quotes this line, else the consensus average. */
+/**
+ * Fair probability = the sharp book's de-vigged price if it quotes this line, else the consensus
+ * MEDIAN. Median, not mean: one soft book pricing a side generously both sets our bestOdds AND —
+ * under a mean — drags the "fair" probability toward itself, manufacturing EV out of its own
+ * mistake. The median ignores the outlier, so the edge is measured against the real consensus.
+ */
 function fairProbOf(options: PriceOption[]): number {
   const sharp = options.find((o) => o.bookmaker === SHARP_BOOK);
   if (sharp) return sharp.fairProbFromThisBook;
-  return options.reduce((sum, o) => sum + o.fairProbFromThisBook, 0) / options.length;
+  const sorted = options.map((o) => o.fairProbFromThisBook).sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/**
+ * Keeps only the best-ranked candidate per direction, preserving the incoming (already ranked)
+ * order. "Home to win" and "Home −0.5" are nearly the same bet — recommending both is one opinion
+ * double-counted, not two bets. Since H2H and AH share HOME/AWAY sides, the side IS the direction
+ * bucket (DRAW / OVER / UNDER each stand alone), so a fixture's picks come out as genuinely
+ * different opinions, not one lean at three different lines.
+ */
+export function diversifyCandidates<T extends { side: Side }>(ranked: T[]): T[] {
+  const seen = new Set<Side>();
+  const out: T[] = [];
+  for (const c of ranked) {
+    if (seen.has(c.side)) continue;
+    seen.add(c.side);
+    out.push(c);
+  }
+  return out;
 }
 
 function confidenceOf(

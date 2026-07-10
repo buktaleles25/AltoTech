@@ -121,6 +121,27 @@ export const MODEL_SUPREMACY_WEIGHT = 0.25;
 export const STEAM_MOVE_THRESHOLD = 0.03;
 
 /**
+ * Max confidence points (±) a steam move can add or subtract. Line movement is real information —
+ * sharp money moves prices — so a move toward our pick validates it and a move against it is a
+ * warning, but it stays a modifier, never the primary signal.
+ */
+export const STEAM_CONFIDENCE_WEIGHT = 8;
+
+/**
+ * Minimum odds for a recommendation. Below ~1.5 the juice dominates: the market prices heavy
+ * favourites extremely accurately, tiny model noise creates phantom "value", and the payout isn't
+ * worth a bill to a punter anyway.
+ */
+export const MIN_PICK_ODDS = 1.5;
+
+/** Fraction of full Kelly used for suggested stakes (quarter-Kelly — standard prudent sizing). */
+export const KELLY_FRACTION = 0.25;
+
+/** Suggested-stake bounds in units (1u = the flat stake used on the history page). */
+export const MIN_STAKE_UNITS = 0.25;
+export const MAX_STAKE_UNITS = 2;
+
+/**
  * How far ahead `/api/analyze/run` re-analyzes fixtures to keep the Fixtures browse list fresh.
  * The daily board itself only ever shows same-day kickoffs.
  */
