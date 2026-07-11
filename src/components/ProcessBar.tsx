@@ -33,7 +33,7 @@ export function ProcessBar({
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm font-bold text-sakura-500">
-            💧 {t.processing} {t.progress(progress.done, progress.total)}
+            🐾 {t.processing} {t.progress(progress.done, progress.total)}
           </span>
           <Button variant="ghost" size="sm" onClick={onCancel}>
             {t.cancel}

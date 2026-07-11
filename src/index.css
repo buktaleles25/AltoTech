@@ -2,19 +2,34 @@
 
 /* ---------- ธีมพาสเทลน่ารัก (kawaii) ---------- */
 @theme {
-  --color-sakura-50: #fff5f8;
-  --color-sakura-100: #ffe4ec;
-  --color-sakura-200: #ffd1dc;
-  --color-sakura-300: #ffb6c1;
-  --color-sakura-400: #ff8fab;
-  --color-sakura-500: #ff6b95;
-  --color-sakura-600: #ef4d84;
+  /* ชมพูโรสหม่น — ลดความหวานลง (ยังเป็น accent หลัก) */
+  --color-sakura-50: #fdf5f6;
+  --color-sakura-100: #f8e8eb;
+  --color-sakura-200: #f0d3d9;
+  --color-sakura-300: #e6aab8;
+  --color-sakura-400: #d98a9c;
+  --color-sakura-500: #c76d84;
+  --color-sakura-600: #b0576f;
 
-  --color-lav-100: #f3efff;
-  --color-lav-200: #e8e1fb;
-  --color-lav-300: #d6c8f5;
-  --color-lav-400: #b79ae0;
-  --color-lav-500: #9b78d1;
+  /* เขียวเสจ — จากผ้าพันคอน้องแมว (สีรอง ช่วยบาลานซ์ชมพู) */
+  --color-sage-100: #eef3ea;
+  --color-sage-200: #d7e3cf;
+  --color-sage-300: #b3cea6;
+  --color-sage-400: #8bb07d;
+  --color-sage-500: #62895a;
+  --color-sage-600: #4d7047;
+
+  /* ลาเวนเดอร์ (หม่นลงนิด) */
+  --color-lav-100: #f2eff8;
+  --color-lav-200: #e6dff2;
+  --color-lav-300: #cfc2e6;
+  --color-lav-400: #ab93cf;
+  --color-lav-500: #8a6cba;
+
+  /* กลาง/นวล */
+  --color-cream-50: #fbf9f5;
+  --color-cream-100: #f4f0e8;
+  --color-cream-200: #e9e3d7;
 
   --color-mint-200: #c8f7e0;
   --color-mint-300: #9eeecb;
@@ -25,8 +40,8 @@
   --font-cute: 'Mali', 'Itim', system-ui, sans-serif;
   --font-hand: 'Itim', 'Mali', cursive;
 
-  --shadow-cute: 0 10px 28px -8px rgba(255, 122, 158, 0.5);
-  --shadow-soft: 0 4px 14px -4px rgba(199, 162, 200, 0.4);
+  --shadow-cute: 0 10px 26px -10px rgba(150, 110, 122, 0.42);
+  --shadow-soft: 0 4px 14px -5px rgba(120, 128, 108, 0.3);
 }
 
 /* ---------- animations ---------- */
@@ -58,8 +73,8 @@
   body {
     margin: 0;
     font-family: var(--font-cute);
-    color: #6b3a4e;
-    background: linear-gradient(160deg, #fff5f8 0%, #ffe9f1 38%, #f1ecff 100%);
+    color: #5f5560;
+    background: linear-gradient(165deg, #fbf9f5 0%, #f3f1ea 45%, #edf1ec 100%);
     background-attachment: fixed;
     min-height: 100dvh;
     overflow-x: hidden;
@@ -68,7 +83,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   input[type='range'] {
-    accent-color: #ff8fab;
+    accent-color: #d98a9c;
   }
   input[type='color'] {
     cursor: pointer;
@@ -98,9 +113,9 @@
   animation: bounce-soft 0.8s ease-in-out infinite;
 }
 
-/* พื้นหลังลายจุดโพลก้าจางๆ */
+/* พื้นหลังลายจุดโพลก้าจางๆ (โทนเสจ) */
 .polka {
-  background-image: radial-gradient(rgba(255, 143, 171, 0.16) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(rgba(139, 176, 125, 0.15) 1.5px, transparent 1.5px);
   background-size: 18px 18px;
 }
 

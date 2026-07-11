@@ -44,11 +44,11 @@ export function ImageCard({ item, onRemove, notify }: Props) {
         {/* status badge */}
         {item.status === 'processing' && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-            <span className="animate-bounce-soft text-2xl">💧</span>
+            <span className="animate-bounce-soft text-2xl">🐾</span>
           </div>
         )}
         {done && (
-          <div className="absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-mint-300 text-emerald-700 shadow">
+          <div className="absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-sage-300 text-sage-600 shadow">
             <CheckIcon className="h-4 w-4" />
           </div>
         )}

@@ -99,7 +99,7 @@ export function SettingsPanel({
             onClick={() => setTab(tb.id)}
             className={`flex-1 whitespace-nowrap rounded-2xl px-3 py-2 text-sm font-bold transition-all active:scale-95 ${
               tab === tb.id
-                ? 'bg-gradient-to-b from-sakura-300 to-sakura-400 text-white shadow-cute'
+                ? 'bg-gradient-to-b from-sakura-400 to-sakura-500 text-white shadow-cute'
                 : 'text-lav-500 hover:bg-lav-100'
             }`}
           >

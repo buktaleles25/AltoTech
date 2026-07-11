@@ -1,47 +1,18 @@
 import type { SVGProps } from 'react'
+import mascotUrl from '../assets/mascot.png'
 
 type IconProps = SVGProps<SVGSVGElement>
 
-/** น้องหยดน้ำ มาสคอตของแอพ (ธีมลายน้ำ = หยดน้ำ) ตาโต แก้มชมพู */
-export function Mascot({ className, ...props }: IconProps) {
+/** น้องแมวทักซิโด้ มาสคอตของแอพ */
+export function Mascot({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 120 120" className={className} {...props} aria-hidden="true">
-      <defs>
-        <linearGradient id="dropGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffd1dc" />
-          <stop offset="55%" stopColor="#ffb6c1" />
-          <stop offset="100%" stopColor="#d6c8f5" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M60 10 C 78 40 96 58 96 80 A 36 36 0 1 1 24 80 C 24 58 42 40 60 10 Z"
-        fill="url(#dropGrad)"
-        stroke="#ff8fab"
-        strokeWidth="3"
-      />
-      {/* ประกายบนหยดน้ำ */}
-      <path
-        d="M46 52 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 Z"
-        fill="#fff"
-        opacity="0.85"
-      />
-      {/* ตา */}
-      <ellipse cx="47" cy="82" rx="5" ry="7" fill="#6b3a4e" />
-      <ellipse cx="73" cy="82" rx="5" ry="7" fill="#6b3a4e" />
-      <circle cx="49" cy="79" r="1.8" fill="#fff" />
-      <circle cx="75" cy="79" r="1.8" fill="#fff" />
-      {/* แก้ม */}
-      <ellipse cx="37" cy="93" rx="6" ry="4" fill="#ff8fab" opacity="0.55" />
-      <ellipse cx="83" cy="93" rx="6" ry="4" fill="#ff8fab" opacity="0.55" />
-      {/* ปาก */}
-      <path
-        d="M53 92 Q60 99 67 92"
-        fill="none"
-        stroke="#6b3a4e"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-      />
-    </svg>
+    <img
+      src={mascotUrl}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+      className={`object-contain ${className ?? ''}`}
+    />
   )
 }
 

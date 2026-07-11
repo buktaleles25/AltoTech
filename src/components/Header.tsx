@@ -21,8 +21,8 @@ export function Header() {
           {t.langLabel}
         </button>
       </div>
-      <div className="mx-auto mt-2 flex max-w-xl items-center justify-center gap-1.5 rounded-full bg-mint-200/70 px-3 py-1.5 text-center text-[0.72rem] font-bold text-emerald-700">
-        <SparkleIcon className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+      <div className="mx-auto mt-2 flex max-w-xl items-center justify-center gap-1.5 rounded-full bg-sage-100 px-3 py-1.5 text-center text-[0.72rem] font-bold text-sage-600">
+        <SparkleIcon className="h-3.5 w-3.5 shrink-0 text-sage-500" />
         {t.privacy}
       </div>
     </header>

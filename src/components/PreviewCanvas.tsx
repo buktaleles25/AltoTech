@@ -145,7 +145,7 @@ export function PreviewCanvas({ item, settings }: Props) {
       <canvas ref={canvasRef} className="block h-auto w-full" />
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/60">
-          <span className="animate-bounce-soft text-2xl">💧</span>
+          <span className="animate-bounce-soft text-2xl">🐾</span>
         </div>
       )}
     </div>

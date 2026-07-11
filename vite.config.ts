@@ -14,15 +14,15 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'ลายน้ำน่ารัก — ใส่ลายน้ำหลายรูปพร้อมกัน',
         short_name: 'ลายน้ำน่ารัก',
         description:
           'ใส่ลายน้ำรูปภาพทีละหลายรูปในคลิกเดียว ทำงานบนเครื่อง 100% เซฟลงมือถือง่าย 🎀',
         lang: 'th',
-        theme_color: '#ffb6c1',
-        background_color: '#fff5f8',
+        theme_color: '#d98a9c',
+        background_color: '#fbf9f5',
         display: 'standalone',
         orientation: 'portrait',
         start_url: BASE,

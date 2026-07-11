@@ -23,9 +23,9 @@ type Size = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'bg-gradient-to-b from-sakura-300 to-sakura-400 text-white shadow-cute hover:from-sakura-400 hover:to-sakura-500 border-white/60',
+    'bg-gradient-to-b from-sakura-400 to-sakura-500 text-white shadow-cute hover:from-sakura-500 hover:to-sakura-600 border-white/60',
   secondary:
-    'bg-lav-100 text-lav-500 border-lav-200 hover:bg-lav-200',
+    'bg-sage-100 text-sage-600 border-sage-200 hover:bg-sage-200',
   ghost: 'bg-white/70 text-sakura-500 border-sakura-100 hover:bg-white',
   danger: 'bg-white/70 text-rose-400 border-rose-100 hover:bg-rose-50',
 }
