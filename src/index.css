@@ -1,0 +1,114 @@
+@import 'tailwindcss';
+
+/* ---------- ธีมพาสเทลน่ารัก (kawaii) ---------- */
+@theme {
+  --color-sakura-50: #fff5f8;
+  --color-sakura-100: #ffe4ec;
+  --color-sakura-200: #ffd1dc;
+  --color-sakura-300: #ffb6c1;
+  --color-sakura-400: #ff8fab;
+  --color-sakura-500: #ff6b95;
+  --color-sakura-600: #ef4d84;
+
+  --color-lav-100: #f3efff;
+  --color-lav-200: #e8e1fb;
+  --color-lav-300: #d6c8f5;
+  --color-lav-400: #b79ae0;
+  --color-lav-500: #9b78d1;
+
+  --color-mint-200: #c8f7e0;
+  --color-mint-300: #9eeecb;
+  --color-sky-200: #cbe7ff;
+  --color-butter-200: #fff2bf;
+  --color-cream: #fffaf5;
+
+  --font-cute: 'Mali', 'Itim', system-ui, sans-serif;
+  --font-hand: 'Itim', 'Mali', cursive;
+
+  --shadow-cute: 0 10px 28px -8px rgba(255, 122, 158, 0.5);
+  --shadow-soft: 0 4px 14px -4px rgba(199, 162, 200, 0.4);
+}
+
+/* ---------- animations ---------- */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes pop-in {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+@keyframes sparkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-28%); }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-cute);
+    color: #6b3a4e;
+    background: linear-gradient(160deg, #fff5f8 0%, #ffe9f1 38%, #f1ecff 100%);
+    background-attachment: fixed;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  input[type='range'] {
+    accent-color: #ff8fab;
+  }
+  input[type='color'] {
+    cursor: pointer;
+  }
+}
+
+/* ---------- helper utilities ---------- */
+.safe-b {
+  padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+}
+.safe-t {
+  padding-top: env(safe-area-inset-top);
+}
+.animate-float {
+  animation: float-y 3s ease-in-out infinite;
+}
+.animate-pop {
+  animation: pop-in 0.3s ease-out both;
+}
+.animate-wiggle {
+  animation: wiggle 1s ease-in-out infinite;
+}
+.animate-sparkle {
+  animation: sparkle 1.6s ease-in-out infinite;
+}
+.animate-bounce-soft {
+  animation: bounce-soft 0.8s ease-in-out infinite;
+}
+
+/* พื้นหลังลายจุดโพลก้าจางๆ */
+.polka {
+  background-image: radial-gradient(rgba(255, 143, 171, 0.16) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+}
+
+/* ซ่อน scrollbar แบบเนียนๆ ในแถบแนวนอน */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
