@@ -1,5 +1,7 @@
-import type { WatermarkSettings } from '../types'
+import type { BgFill, WatermarkSettings } from '../types'
 import { anchorPoint, deg2rad, rotatedHalfExtent, tilePositions } from './geometry'
+import { imageSize, type DecodedImage } from './imageLoader'
+import { drawPreset } from './presets'
 
 // context ที่ใช้วาดได้ทั้ง <canvas> ปกติ และ OffscreenCanvas
 export type Ctx2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
@@ -106,10 +108,20 @@ function buildStamp(
  */
 export function drawWatermarked(input: DrawInput): void {
   const { ctx, base, W, H, settings, logo, logoAspect = 1 } = input
-
   ctx.clearRect(0, 0, W, H)
   ctx.drawImage(base, 0, 0, W, H)
+  drawWatermarkStamp(ctx, W, H, settings, logo, logoAspect)
+}
 
+/** วาดเฉพาะชั้นลายน้ำ (ไม่แตะพื้น/รูป) — ใช้ต่อจากการวาดพื้นหลัง+ตัวแบบ */
+export function drawWatermarkStamp(
+  ctx: Ctx2D,
+  W: number,
+  H: number,
+  settings: WatermarkSettings,
+  logo?: CanvasImageSource | null,
+  logoAspect = 1,
+): void {
   const S = Math.min(W, H)
   const stamp = buildStamp(ctx, S, settings, logo, logoAspect)
   if (!stamp) return
@@ -140,4 +152,47 @@ export function drawWatermarked(input: DrawInput): void {
     stamp.paint(ctx)
     ctx.restore()
   }
+}
+
+// วาดรูปแบบ cover (เหมือน object-fit: cover)
+function drawCover(ctx: Ctx2D, img: DecodedImage, W: number, H: number) {
+  const { w: iw, h: ih } = imageSize(img)
+  const scale = Math.max(W / iw, H / ih)
+  const dw = iw * scale
+  const dh = ih * scale
+  ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh)
+}
+
+export interface ComposeInput {
+  ctx: Ctx2D
+  W: number
+  H: number
+  mainImage: CanvasImageSource // cutout (พื้นโปร่ง) หรือรูปต้นฉบับ
+  bg: BgFill
+  customBgImage?: DecodedImage | null // รูปพื้นหลังถอดรหัสแล้ว (กรณี bg=custom)
+  settings: WatermarkSettings
+  logo?: CanvasImageSource | null
+  logoAspect?: number
+}
+
+/**
+ * ประกอบภาพ: พื้นหลัง(สี/preset/custom/โปร่ง) → ตัวแบบ(cutout/ต้นฉบับ) → ลายน้ำ
+ * ใช้ทั้ง preview และ batch เมื่อมีการลบพื้นหลัง/เปลี่ยนพื้นหลัง
+ */
+export function renderComposed(input: ComposeInput): void {
+  const { ctx, W, H, mainImage, bg, customBgImage, settings, logo, logoAspect = 1 } = input
+  ctx.clearRect(0, 0, W, H)
+
+  if (bg.type === 'color') {
+    ctx.fillStyle = bg.color
+    ctx.fillRect(0, 0, W, H)
+  } else if (bg.type === 'preset') {
+    drawPreset(ctx, W, H, bg.id)
+  } else if (bg.type === 'custom' && customBgImage) {
+    drawCover(ctx, customBgImage, W, H)
+  }
+  // transparent → ไม่วาดพื้นหลัง (ปล่อยโปร่ง)
+
+  ctx.drawImage(mainImage, 0, 0, W, H)
+  drawWatermarkStamp(ctx, W, H, settings, logo, logoAspect)
 }

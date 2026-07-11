@@ -15,6 +15,7 @@
   "dependencies": {
     "@fontsource/itim": "^5.2.7",
     "@fontsource/mali": "^5.2.8",
+    "@huggingface/transformers": "^4.2.0",
     "fflate": "^0.8.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"

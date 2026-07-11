@@ -9,6 +9,9 @@ const BASE = '/AltoTech/'
 // https://vite.dev/config/
 export default defineConfig({
   base: BASE,
+  // transformers.js โหลดแบบ dynamic ใน worker — ไม่ต้อง pre-bundle
+  optimizeDeps: { exclude: ['@huggingface/transformers'] },
+  worker: { format: 'es' },
   plugins: [
     react(),
     tailwindcss(),
@@ -39,9 +42,35 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff,woff2}'],
+        globPatterns: ['**/*.{css,html,svg,png,woff,woff2}'],
+        // ไม่ precache JS ก้อนใหญ่ (transformers.js) — ให้ runtime-cache แทน
+        globIgnores: ['**/transformers*.js', '**/ort*.js', '**/*.wasm'],
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
+        runtimeCaching: [
+          {
+            // โมเดล AI + onnxruntime จาก CDN → cache ไว้ใช้ offline
+            urlPattern: ({ url }) =>
+              url.hostname.includes('huggingface.co') ||
+              url.hostname.includes('hf.co') ||
+              url.hostname.includes('cdn-lfs') ||
+              url.hostname.includes('jsdelivr.net'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ai-models',
+              expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+              rangeRequests: true,
+            },
+          },
+          {
+            // app JS (รวม transformers chunk) → StaleWhileRevalidate
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.endsWith('.js'),
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'app-js' },
+          },
+        ],
       },
       devOptions: {
         enabled: false,

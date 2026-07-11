@@ -13,17 +13,26 @@
 - ✍️ **ลายน้ำข้อความ** — ปรับข้อความ ฟอนต์ (Mali/Itim/ระบบ/Serif) ขนาด สี ความโปร่งใส เส้นขอบ
 - 🎀 **ลายน้ำโลโก้** — อัปโหลด PNG (พื้นหลังโปร่งได้) ปรับขนาด/ความโปร่งใส (ใช้คู่กับข้อความได้)
 - 📐 **ตำแหน่ง** — 9 จุด (มุม/กลาง) + โหมด **ปูทั้งรูป (tile)** + หมุน + ระยะขอบ
+- 🪄 **ลบพื้นหลังด้วย AI + เปลี่ยนพื้นหลัง** — ลบพื้นหลังในเบราว์เซอร์ (โมเดล BiRefNet) แล้ว **เซฟเป็น PNG โปร่งใส** หรือใส่พื้นหลังใหม่: โปร่งใส / สีพื้น / ชุด preset (พาสเทล+สตูดิโอ 14 แบบ) / อัปโหลดเอง
 - 👀 **พรีวิวสด** — ปรับแล้วเห็นผลทันทีบนรูปตัวอย่าง
 - ⚡ **ใส่ลายน้ำทั้งหมดในคลิกเดียว** — มี progress bar + ยกเลิกได้
 - 💾 **เซฟง่ายบนมือถือ** — แชร์เข้า Photos (iOS) / ดาวน์โหลด ZIP / บันทึกรายรูป
 - 📱 **ติดตั้งเป็นแอพ (PWA)** — Add to Home Screen ใช้ offline ได้
-- 🔒 **ความเป็นส่วนตัว** — ประมวลผลด้วย Canvas บนเครื่อง ไม่มีการส่งข้อมูลออก
+- 🔒 **ความเป็นส่วนตัว** — ประมวลผลด้วย Canvas + AI บนเครื่อง ไม่มีการส่งรูปออก
 - 🖼️ แก้การหมุนรูปตาม **EXIF** (รูปแนวตั้งจาก iPhone ไม่ตะแคง) และปรับขนาด/คุณภาพไฟล์ส่งออกได้
+
+## 🆓 ฟรี / โอเพนซอร์ส 100%
+
+ทุก dependency เป็น **MIT / Apache-2.0 / OFL** — ไม่มีค่าใช้จ่าย ไม่มี API เสียเงิน ไม่มีไลเซนส์จำกัด (ใช้เชิงพาณิชย์ได้):
+โมเดลลบพื้นหลัง **BiRefNet (`onnx-community/BiRefNet_lite-ONNX`) = MIT**, transformers.js = Apache-2.0, React/fflate/Tailwind = MIT, ฟอนต์ = OFL, โฮสต์ฟรีบน GitHub Pages
 
 ## 🧩 เทคโนโลยี
 
 Vite + React + TypeScript + Tailwind CSS v4 · `vite-plugin-pwa` · `fflate` (ZIP) · Web Share API · ฟอนต์ไทย `@fontsource` (Mali/Itim)
+ลบพื้นหลัง: **`@huggingface/transformers`** รัน **BiRefNet** ในเบราว์เซอร์ (WebGPU + fallback WASM) ผ่าน Web Worker
 ประมวลผลภาพด้วย **Canvas API** ล้วน — ไม่มี backend
+
+> **หมายเหตุการลบพื้นหลัง:** ครั้งแรกจะดาวน์โหลดโมเดล AI (ต้องต่ออินเทอร์เน็ตครั้งแรก) แล้ว cache ไว้ใช้ offline ได้ · เร็วบนเครื่องที่มี WebGPU (Chrome/Edge/Safari 18+/iOS 18+), เครื่องอื่นใช้ WASM (ช้ากว่าแต่ทำงานได้) · รูปยังคงประมวลผลบนเครื่อง ไม่ถูกอัปโหลด
 
 ## 🚀 เริ่มต้นใช้งาน (dev)
 
@@ -37,7 +46,7 @@ npm run dev        # เปิด http://localhost:5173/AltoTech/
 ```bash
 npm run build      # ตรวจ type + build ขึ้น dist/
 npm run preview    # ดู production build ที่ http://localhost:4173/AltoTech/
-npm run test       # รัน unit test (geometry / sizing)
+npm run test       # รัน unit test (geometry / sizing / presets)
 ```
 
 ## 🌐 Deploy ขึ้น GitHub Pages
@@ -81,6 +90,10 @@ npm run test       # รัน unit test (geometry / sizing)
 | 14 | iOS: แชร์เข้า Photos | เซฟลงคลังรูปได้ |
 | 15 | รีเฟรชหน้า | ค่าตั้งค่าล่าสุดยังอยู่ (จำใน localStorage) |
 | 16 | Add to Home Screen + offline | เปิดใช้ได้แบบ PWA |
+| 17 | เปิด "ลบพื้นหลัง (AI)" ครั้งแรก | โหลดโมเดล (มี progress) แล้ว preview เป็นตัวแบบพื้นโปร่ง |
+| 18 | เลือกพื้นหลัง โปร่งใส/สีพื้น/preset/อัปโหลด | preview เปลี่ยนพื้นหลังตามเลือก |
+| 19 | โปร่งใส → ใส่ลายน้ำทั้งหมด → บันทึก | ได้ **PNG โปร่งใส** (ลายน้ำทับถูก) |
+| 20 | ลบพื้นหลัง + preset + ปรับค่าลายน้ำ | ปรับลายน้ำแล้วไม่รัน AI ซ้ำ (ใช้ cutout ที่ cache) |
 
 ## 📁 โครงสร้างโปรเจกต์ (ย่อ)
 

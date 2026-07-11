@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type {
+  BackgroundSettings,
   LogoWatermark,
   OutputSettings,
   TextWatermark,
@@ -36,8 +37,14 @@ export const DEFAULT_OUTPUT: OutputSettings = {
   filenamePrefix: '',
 }
 
+export const DEFAULT_BACKGROUND: BackgroundSettings = {
+  removeBg: false,
+  fill: { type: 'transparent' },
+}
+
 const SETTINGS_KEY = 'wm-settings-v1'
 const OUTPUT_KEY = 'wm-output-v1'
+const BACKGROUND_KEY = 'wm-background-v1'
 
 function loadSettings(): WatermarkSettings {
   try {
@@ -66,9 +73,23 @@ function loadOutput(): OutputSettings {
   }
 }
 
+function loadBackground(): BackgroundSettings {
+  try {
+    const raw = localStorage.getItem(BACKGROUND_KEY)
+    if (!raw) return DEFAULT_BACKGROUND
+    const parsed = { ...DEFAULT_BACKGROUND, ...(JSON.parse(raw) as Partial<BackgroundSettings>) }
+    // custom dataUrl ไม่ได้ persist → ถ้าโหลดมาเป็น custom ให้กลับเป็นโปร่งใส
+    if (parsed.fill?.type === 'custom') parsed.fill = { type: 'transparent' }
+    return parsed
+  } catch {
+    return DEFAULT_BACKGROUND
+  }
+}
+
 export function useSettings() {
   const [settings, setSettings] = useState<WatermarkSettings>(loadSettings)
   const [output, setOutput] = useState<OutputSettings>(loadOutput)
+  const [background, setBackground] = useState<BackgroundSettings>(loadBackground)
 
   // persist (โลโก้ dataUrl ถูกตัดออกเพื่อกัน localStorage เต็ม)
   useEffect(() => {
@@ -91,6 +112,19 @@ export function useSettings() {
     }
   }, [output])
 
+  // persist background (custom dataUrl ถูกตัดออกกัน localStorage เต็ม)
+  useEffect(() => {
+    try {
+      const toSave: BackgroundSettings =
+        background.fill.type === 'custom'
+          ? { ...background, fill: { type: 'transparent' } }
+          : background
+      localStorage.setItem(BACKGROUND_KEY, JSON.stringify(toSave))
+    } catch {
+      // ignore
+    }
+  }, [background])
+
   const patchText = useCallback((patch: Partial<TextWatermark>) => {
     setSettings((s) => ({ ...s, text: { ...s.text, ...patch } }))
   }, [])
@@ -107,18 +141,25 @@ export function useSettings() {
     setOutput((o) => ({ ...o, ...patch }))
   }, [])
 
+  const patchBackground = useCallback((patch: Partial<BackgroundSettings>) => {
+    setBackground((b) => ({ ...b, ...patch }))
+  }, [])
+
   const reset = useCallback(() => {
     setSettings(DEFAULT_SETTINGS)
     setOutput(DEFAULT_OUTPUT)
+    setBackground(DEFAULT_BACKGROUND)
   }, [])
 
   return {
     settings,
     output,
+    background,
     patchText,
     patchLogo,
     patchSettings,
     patchOutput,
+    patchBackground,
     reset,
   }
 }

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type {
+  BackgroundSettings,
   LogoWatermark,
   OutputFormat,
   OutputSettings,
@@ -9,19 +10,22 @@ import type {
 import { useI18n } from '../i18n'
 import { Button, Card, Row, Segmented, Slider, Toggle } from './ui'
 import { PositionPicker } from './PositionPicker'
+import { BackgroundControls } from './BackgroundControls'
 import { HeartIcon, StarIcon } from './icons'
 
 interface Props {
   settings: WatermarkSettings
   output: OutputSettings
+  background: BackgroundSettings
   patchText: (p: Partial<TextWatermark>) => void
   patchLogo: (p: Partial<LogoWatermark>) => void
   patchSettings: (p: Partial<WatermarkSettings>) => void
   patchOutput: (p: Partial<OutputSettings>) => void
+  patchBackground: (p: Partial<BackgroundSettings>) => void
   onReset: () => void
 }
 
-type Tab = 'text' | 'logo' | 'layout' | 'output'
+type Tab = 'text' | 'logo' | 'background' | 'layout' | 'output'
 
 const FONTS = [
   { value: "'Mali', sans-serif", label: 'Mali' },
@@ -60,10 +64,12 @@ function ColorField({
 export function SettingsPanel({
   settings,
   output,
+  background,
   patchText,
   patchLogo,
   patchSettings,
   patchOutput,
+  patchBackground,
   onReset,
 }: Props) {
   const { t } = useI18n()
@@ -73,6 +79,7 @@ export function SettingsPanel({
   const tabs: { id: Tab; label: string; emoji: string }[] = [
     { id: 'text', label: t.tabText, emoji: '✏️' },
     { id: 'logo', label: t.tabLogo, emoji: '🎀' },
+    { id: 'background', label: t.tabBackground, emoji: '🪄' },
     { id: 'layout', label: t.tabLayout, emoji: '📐' },
     { id: 'output', label: t.tabOutput, emoji: '💾' },
   ]
@@ -267,6 +274,11 @@ export function SettingsPanel({
               </div>
             </div>
           </>
+        )}
+
+        {/* ===== BACKGROUND ===== */}
+        {tab === 'background' && (
+          <BackgroundControls background={background} patchBackground={patchBackground} />
         )}
 
         {/* ===== LAYOUT ===== */}

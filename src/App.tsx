@@ -18,14 +18,17 @@ import { HeartIcon } from './components/icons'
 export function App() {
   const { t } = useI18n()
   const { images, addFiles, removeImage, clearAll, updateImage } = useImages()
-  const { settings, output, patchText, patchLogo, patchSettings, patchOutput, reset } =
-    useSettings()
-  const { processing, progress, run, cancel } = useProcessor({
-    images,
+  const {
     settings,
     output,
-    updateImage,
-  })
+    background,
+    patchText,
+    patchLogo,
+    patchSettings,
+    patchOutput,
+    patchBackground,
+    reset,
+  } = useSettings()
 
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<number>(0)
@@ -34,6 +37,15 @@ export function App() {
     window.clearTimeout(toastTimer.current)
     toastTimer.current = window.setTimeout(() => setToast(null), 3800)
   }, [])
+
+  const { processing, progress, stage, run, cancel, clearCutouts } = useProcessor({
+    images,
+    settings,
+    output,
+    background,
+    updateImage,
+    onError: notify,
+  })
 
   const doneCount = useMemo(
     () => images.filter((i) => i.status === 'done').length,
@@ -83,17 +95,23 @@ export function App() {
                 <span className="text-sm font-bold text-sakura-500">{t.preview}</span>
                 <span className="text-xs text-lav-400">· {t.previewHint}</span>
               </div>
-              <PreviewCanvas item={representative} settings={settings} />
+              <PreviewCanvas
+                item={representative}
+                settings={settings}
+                background={background}
+              />
             </section>
 
             {/* settings */}
             <SettingsPanel
               settings={settings}
               output={output}
+              background={background}
               patchText={patchText}
               patchLogo={patchLogo}
               patchSettings={patchSettings}
               patchOutput={patchOutput}
+              patchBackground={patchBackground}
               onReset={reset}
             />
 
@@ -107,7 +125,10 @@ export function App() {
                 <Dropzone onFiles={addFiles} compact />
                 <button
                   type="button"
-                  onClick={clearAll}
+                  onClick={() => {
+                    clearAll()
+                    clearCutouts()
+                  }}
                   className="rounded-full border-2 border-rose-100 bg-white/70 px-3 py-1.5 text-sm font-bold text-rose-400 transition active:scale-95"
                 >
                   {t.clearAll}
@@ -131,6 +152,7 @@ export function App() {
               <ProcessBar
                 processing={processing}
                 progress={progress}
+                stage={stage}
                 hasImages={hasImages}
                 doneCount={doneCount}
                 onRun={run}

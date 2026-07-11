@@ -5,6 +5,7 @@ import { SparkleIcon } from './icons'
 interface Props {
   processing: boolean
   progress: { done: number; total: number }
+  stage?: string
   hasImages: boolean
   doneCount: number
   onRun: () => void
@@ -14,6 +15,7 @@ interface Props {
 export function ProcessBar({
   processing,
   progress,
+  stage,
   hasImages,
   doneCount,
   onRun,
@@ -31,9 +33,9 @@ export function ProcessBar({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-bold text-sakura-500">
-            🐾 {t.processing} {t.progress(progress.done, progress.total)}
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-sm font-bold text-sakura-500">
+            🐾 {stage ? stage : `${t.processing} ${t.progress(progress.done, progress.total)}`}
           </span>
           <Button variant="ghost" size="sm" onClick={onCancel}>
             {t.cancel}

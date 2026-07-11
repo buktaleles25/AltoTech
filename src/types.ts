@@ -52,6 +52,18 @@ export interface OutputSettings {
   filenamePrefix: string
 }
 
+// ---- พื้นหลังใหม่ (หลังลบพื้นหลัง AI) ----
+export type BgFill =
+  | { type: 'transparent' }
+  | { type: 'color'; color: string }
+  | { type: 'preset'; id: string }
+  | { type: 'custom'; dataUrl: string }
+
+export interface BackgroundSettings {
+  removeBg: boolean // เปิดลบพื้นหลังอัตโนมัติ (AI)
+  fill: BgFill // จะวางอะไรหลังลบพื้นหลัง
+}
+
 // ---- สถานะรูปแต่ละไฟล์ ----
 export type ImageStatus = 'pending' | 'processing' | 'done' | 'error'
 
