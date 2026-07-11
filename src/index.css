@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+
+/* ---------- ธีมพาสเทลน่ารัก (kawaii) ---------- */
+@theme {
+  /* ชมพูโรสหม่น — ลดความหวานลง (ยังเป็น accent หลัก) */
+  --color-sakura-50: #fdf5f6;
+  --color-sakura-100: #f8e8eb;
+  --color-sakura-200: #f0d3d9;
+  --color-sakura-300: #e6aab8;
+  --color-sakura-400: #d98a9c;
+  --color-sakura-500: #c76d84;
+  --color-sakura-600: #b0576f;
+
+  /* เขียวเสจ — จากผ้าพันคอน้องแมว (สีรอง ช่วยบาลานซ์ชมพู) */
+  --color-sage-100: #eef3ea;
+  --color-sage-200: #d7e3cf;
+  --color-sage-300: #b3cea6;
+  --color-sage-400: #8bb07d;
+  --color-sage-500: #62895a;
+  --color-sage-600: #4d7047;
+
+  /* ลาเวนเดอร์ (หม่นลงนิด) */
+  --color-lav-100: #f2eff8;
+  --color-lav-200: #e6dff2;
+  --color-lav-300: #cfc2e6;
+  --color-lav-400: #ab93cf;
+  --color-lav-500: #8a6cba;
+
+  /* กลาง/นวล */
+  --color-cream-50: #fbf9f5;
+  --color-cream-100: #f4f0e8;
+  --color-cream-200: #e9e3d7;
+
+  --color-mint-200: #c8f7e0;
+  --color-mint-300: #9eeecb;
+  --color-sky-200: #cbe7ff;
+  --color-butter-200: #fff2bf;
+  --color-cream: #fffaf5;
+
+  --font-cute: 'Mali', 'Itim', system-ui, sans-serif;
+  --font-hand: 'Itim', 'Mali', cursive;
+
+  --shadow-cute: 0 10px 26px -10px rgba(150, 110, 122, 0.42);
+  --shadow-soft: 0 4px 14px -5px rgba(120, 128, 108, 0.3);
+}
+
+/* ---------- animations ---------- */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes pop-in {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+@keyframes sparkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-28%); }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-cute);
+    color: #5f5560;
+    background: linear-gradient(165deg, #fbf9f5 0%, #f3f1ea 45%, #edf1ec 100%);
+    background-attachment: fixed;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  input[type='range'] {
+    accent-color: #d98a9c;
+  }
+  input[type='color'] {
+    cursor: pointer;
+  }
+}
+
+/* ---------- helper utilities ---------- */
+.safe-b {
+  padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+}
+.safe-t {
+  padding-top: env(safe-area-inset-top);
+}
+.animate-float {
+  animation: float-y 3s ease-in-out infinite;
+}
+.animate-pop {
+  animation: pop-in 0.3s ease-out both;
+}
+.animate-wiggle {
+  animation: wiggle 1s ease-in-out infinite;
+}
+.animate-sparkle {
+  animation: sparkle 1.6s ease-in-out infinite;
+}
+.animate-bounce-soft {
+  animation: bounce-soft 0.8s ease-in-out infinite;
+}
+
+/* พื้นหลังลายจุดโพลก้าจางๆ (โทนเสจ) */
+.polka {
+  background-image: radial-gradient(rgba(139, 176, 125, 0.15) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+}
+
+/* ซ่อน scrollbar แบบเนียนๆ ในแถบแนวนอน */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
